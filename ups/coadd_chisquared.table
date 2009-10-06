@@ -1,0 +1,18 @@
+setupRequired(daf_data)
+setupRequired(cfitsio)
+setupRequired(wcslib)
+setupRequired(xpa)
+setupRequired(numpy)
+setupRequired(minuit)
+setupRequired(afw)
+setupRequired(coadd_utils)
+setupRequired(ip_diffim)
+# for examples
+setupOptional(meas_algorithms)
+
+setupOptional(afwdata)
+
+envPrepend(LD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
+envPrepend(DYLD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
+
+envPrepend(PYTHONPATH, ${PRODUCT_DIR}/python)
