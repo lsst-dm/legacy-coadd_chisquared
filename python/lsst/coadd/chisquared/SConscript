@@ -1,0 +1,8 @@
+# -*- python -*-
+Import("env")
+
+# includedProducts lists the names of all packages on which you depend that have their own SWIG wrappers
+# (which should generally be all of them), separated by spaces.
+env.CheckSwig("python", ilang="c++",
+    includedProducts="utils daf_base pex_exceptions pex_logging pex_policy daf_persistence daf_data security afw")
+env.LoadableModuleIncomplete("_chisquaredLib", Split("chisquaredLib.i"), LIBS=env.getlibs("coadd_chisquared"))
