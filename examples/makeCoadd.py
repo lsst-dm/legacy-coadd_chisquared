@@ -25,7 +25,7 @@ import lsst.afw.image as afwImage
 import lsst.afw.math as afwMath
 import lsst.afw.display.ds9 as ds9
 import lsst.coadd.utils as coaddUtils
-import lsst.coadd.psfmatched as coaddPsfMatched
+import lsst.coadd.chisquared as coaddChiSquared
 
 BaseDir = os.path.dirname(__file__)
 DefPolicyPath = os.path.join(BaseDir, "makeCoadd_policy.paf")
@@ -109,16 +109,15 @@ See makeCoadd_policy.paf for documentation
             
             if not coadd:
                 print "First exposure is the reference: warp but do not psf-match"
-                coadd = coaddPsfMatched.Coadd(exposure, makeCoaddPolicy)
+                coadd = coaddChiSquared.Coadd(exposure, makeCoaddPolicy)
                 if saveDebugImages:
                     warpedExposure = coadd.getWarpedReferenceExposure()
                     warpedExposure.writeFits("warped%s" % (fileName,))
             else:
                 print "Warp, psf-match and add to coadd"
-                warpedExposure, psfMatchedExposure = coadd.addExposure(exposure)[0:2]
+                warpedExposure = coadd.addExposure(exposure)
                 if saveDebugImages:
                     warpedExposure.writeFits("warped%s" % (fileName,))
-                    psfMatchedExposure.writeFits("psfMatched%s" % (fileName,))
 
     weightMap = coadd.getWeightMap()
     weightMap.writeFits(weightOutName)

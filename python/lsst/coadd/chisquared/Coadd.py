@@ -42,7 +42,7 @@ class Coadd(object):
         self._log = pexLog.Log(pexLog.Log.getDefaultLog(), "coadd.chisquared.Coadd")
         self._referenceExposure = referenceExposure
         self._policy = policy
-        self._warpExposures = policy.get("warpExposures").split()
+        self._warpExposures = policy.get("warpExposures")
 
         allowedMaskPlanes = policy.get("allowedMaskPlanes").split()
         allowedMask = 0
@@ -55,7 +55,7 @@ class Coadd(object):
             self._warpingKernel = afwMath.makeWarpingKernel(policy.get("warpingKernelName"))
             resolutionFactor = policy.get("resolutionFactor")
             self._coadd = coaddUtils.makeBlankCoadd(referenceExposure, resolutionFactor)
-            self._warpedReferenceExposure = self._warpExposure(exposure)
+            self._warpedReferenceExposure = self._warpExposure(referenceExposure)
         else:
             self._coadd = blankCloneExposure(referenceExposure)
             self._warpedReferenceExposure = referenceExposure
@@ -86,9 +86,9 @@ class Coadd(object):
             # psf-match warped exposure to reference exposure
             self._log.log(pexLog.Log.INFO, "psf-match masked image")
             psfMatchedMaskedImage, kernelSum = _psfMatchImage(self._warpedReferenceExposure.getMaskedImage(),
-                warpedMaskedImage, self._psfMatchPolicy, self._log)
+                warpedExposure.getMaskedImage(), self._psfMatchPolicy, self._log)
             addMaskedImage = psfMatchedMaskedImage
-            psfMatchedExposure = afwImage.makeExposure(psfMatchedMaskedImage, self._wcs)
+            exposureToAdd = afwImage.makeExposure(psfMatchedMaskedImage, self._wcs)
             weight = 1.0 / kernelSum
         else:
             exposureToAdd = exposure
@@ -148,7 +148,6 @@ class Coadd(object):
         """
         self._log.log(pexLog.Log.INFO, "warp exposure")
         warpedExposure = blankCloneExposure(self._coadd)
-        warpedMaskedImage = warpedExposure.getMaskedImage()
         afwMath.warpExposure(warpedExposure, exposure, self._warpingKernel)
         return warpedExposure
 
