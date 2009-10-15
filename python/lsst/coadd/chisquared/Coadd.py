@@ -8,6 +8,7 @@ import lsst.afw.detection as afwDetect
 import lsst.coadd.utils as coaddUtils
 import lsst.ip.diffim as ipDiffim
 import chisquaredLib
+import lsst.coadd.psfmatched as coaddPsfMatch
 
 __all__ = ["Coadd"]
 
@@ -57,7 +58,7 @@ class Coadd(object):
             self._coadd = coaddUtils.makeBlankCoadd(referenceExposure, resolutionFactor)
             self._warpedReferenceExposure = self._warpExposure(referenceExposure)
         else:
-            self._coadd = blankCloneExposure(referenceExposure)
+            self._coadd = coaddUtils.makeBlankExposure(referenceExposure)
             self._warpedReferenceExposure = referenceExposure
         self._wcs = self._coadd.getWcs() # merely a convenience
         self._weightMap = afwImage.ImageF(self._coadd.getMaskedImage().getDimensions(), 0)
@@ -75,9 +76,10 @@ class Coadd(object):
             and if warpExposure is True then it should have a larger PSF than the reference exposure.
             
         Returns:
-        - exposureToAdd: exposure that was added to the coadd;
-            if warpExposure is True then this is exposure warped and psf-matched to WCS of the coadd,
-            otherwise it is the input exposure.
+        - warpedExposure: exposure warped to match the WCS of the coadd;
+            the original exposure if warpExposure false
+        - psfMatchedExposure: warped Exposure psf-mathed to warped reference Exposure;
+            the original exposure if warpExposure false
         """
         if self._warpExposure:
             # warp exposure
@@ -85,17 +87,19 @@ class Coadd(object):
     
             # psf-match warped exposure to reference exposure
             self._log.log(pexLog.Log.INFO, "psf-match masked image")
-            psfMatchedMaskedImage, kernelSum = _psfMatchImage(self._warpedReferenceExposure.getMaskedImage(),
-                warpedExposure.getMaskedImage(), self._psfMatchPolicy, self._log)
+            psfMatchedMaskedImage, kernelSum, backgroundModel = coaddPsfMatch.psfMatchMaskedImage(
+                self._warpedReferenceExposure.getMaskedImage(), warpedExposure.getMaskedImage(),
+                self._psfMatchPolicy)
             addMaskedImage = psfMatchedMaskedImage
-            exposureToAdd = afwImage.makeExposure(psfMatchedMaskedImage, self._wcs)
+            psfMatchedExposure = afwImage.makeExposure(psfMatchedMaskedImage, self._wcs)
             weight = 1.0 / kernelSum
         else:
-            exposureToAdd = exposure
+            warpedExposure = exposure
+            psfMatchedExposure = exposure
             weight = 1.0
             
-        self._basicAddExposure(exposureToAdd, weight)
-        return exposureToAdd
+        self._basicAddExposure(psfMatchedExposure, weight)
+        return (warpedExposure, psfMatchedExposure)
 
     def getCoadd(self):
         """Get the coadd Exposure, as computed so far
@@ -147,50 +151,6 @@ class Coadd(object):
         _coadd and _warpingKernel must have been set.
         """
         self._log.log(pexLog.Log.INFO, "warp exposure")
-        warpedExposure = blankCloneExposure(self._coadd)
+        warpedExposure = coaddUtils.makeBlankExposure(self._coadd)
         afwMath.warpExposure(warpedExposure, exposure, self._warpingKernel)
         return warpedExposure
-
-
-
-def blankCloneExposure(exposure):
-    """Return a blank exposure with the size and WCS as exposure
-    """
-    maskedImage = exposure.getMaskedImage()
-    blankMaskedImage = maskedImage.Factory(maskedImage.getDimensions())
-    blankMaskedImage.set((0,0,0))
-    return afwImage.makeExposure(blankMaskedImage, exposure.getWcs())
-
-def _psfMatchImage(referenceMaskedImage, maskedImage, policy, log):
-    """PSF-match a maskedImage to match a reference MaskedImage
-    
-    This code is stolen from ip_diffim. Once ip_diffim offers this function
-    (or one very similar) use that instead.
-    
-    Inputs:
-    - referenceMaskedImage: MaskedImage to match (should have larger PSF than maskedImage)
-    - maskedImage: MaskedImage whose sources should be chi-squared to the reference
-    - policy: policy for ip_diffim
-    - log: pexLog.Log object
-    
-    Returns:
-    - psfMatchedMaskedImage: chi-squared version of maskedImage
-    - kernelSum: sum of PSF-matching kernel = reference / masked image intensity
-    """
-    assert (referenceMaskedImage.getDimensions() == maskedImage.getDimensions())
-
-#!!! PROBLEM: this will always have a kernel sum of 1, which is not what I want. HOW TO FIX???
-    log.log(pexLog.Log.INFO, "_psfMatchImage: compute PSF-matching kernel")
-    psfMatchingKernel, spatialBg, kernelCellSet = ipDiffim.createPsfMatchingKernel(
-        referenceMaskedImage, maskedImage, policy)
-
-    kImage = afwImage.ImageD(psfMatchingKernel.getWidth(), psfMatchingKernel.getHeight())
-    kernelSum = psfMatchingKernel.computeImage(kImage, False, maskedImage.getWidth()/2.0, maskedImage.getHeight()/2.0)
-    
-    log.log(pexLog.Log.INFO, "_psfMatchImage: PSF-match science MaskedImage to reference")
-    psfMatchedImage = afwImage.MaskedImageF(maskedImage.getDimensions())
-    doNormalize = True
-    afwMath.convolve(psfMatchedImage, maskedImage, psfMatchingKernel, doNormalize)
-    log.log(pexLog.Log.INFO, "_psfMatchImage: done")
-    return psfMatchedImage, kernelSum
-    

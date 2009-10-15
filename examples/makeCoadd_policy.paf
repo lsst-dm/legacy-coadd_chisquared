@@ -2,24 +2,24 @@
 #
 # default policy for makeCoadd.py example
 
+# save intermediate images?
+saveDebugImages: true
+
+# pixels with these mask plane bits other than these are omitted from the coadd
+allowedMaskPlanes: "BAD SAT INTRP"
+
 # warp and psf-match exposures to match the reference exposure?
 # if false then:
 # * all exposures are assumed to match the reference in WCS, size and PSF
-# * all other policy entries are ignored except allowedMaskPlanes
+# * all other policy entries are ignored except allowedMaskPlanes and saveDebugImages
 # * the coadd matches the reference exposure's WCS and size
 warpExposures: true
 
-# pixels with these mask plane bits other than these are omitted from the coadd
-allowedMaskPlanes: "BAD SAT"
+# resolution of coadd/input images along x and y; larger values produce more pixels in the coadd
+resolutionFactor: 1.0
 
 # name of warping kernel, e.g. lanczos4 or bilinear
 warpingKernelName: lanczos3
-
-# resolution of coadd vs. input images (linear -- i.e. along x or y)
-resolutionFactor: 1.0
-
-# save intermediate images?
-saveDebugImages: false
 
 psfMatchPolicy: {
     ####################################
@@ -63,7 +63,7 @@ psfMatchPolicy: {
     #
     # For standard processing a value like 10 would be acceptable
     # 
-    detThreshold: 250.0
+    detThreshold: 15.0
     
     ######
     # Minimum number of clean candidates in the image
@@ -119,13 +119,7 @@ psfMatchPolicy: {
     #
     alardNGauss:   3
     alardSigGauss: 0.7 1.5 3.0
-    alardDegGauss: 4   3   2
-    
-    # Lets just make a couple for debugging
-    #alardNGauss: 1
-    #alardSigGauss: 1.5
-    #alardDegGauss: 1
-    
+    alardDegGauss: 4   3   2    
     
     ######
     # Regularization used with delta-function kernel basis set to enfore
@@ -187,7 +181,7 @@ psfMatchPolicy: {
     #
     singleKernelClipping:  true
     kernelSumClipping:     true
-    spatialKernelClipping: true
+    spatialKernelClipping: false
     
     
     

@@ -25,10 +25,12 @@ import lsst.afw.image as afwImage
 import lsst.afw.math as afwMath
 import lsst.afw.display.ds9 as ds9
 import lsst.coadd.utils as coaddUtils
-import lsst.coadd.chisquared as coaddChiSquared
+import lsst.coadd.chisquared as coaddChiSq
 
 BaseDir = os.path.dirname(__file__)
 DefPolicyPath = os.path.join(BaseDir, "makeCoadd_policy.paf")
+
+BackgroundCells = 256
 
 def subtractBackground(maskedImage, doDisplay = False):
     """Subtract the background from a MaskedImage
@@ -40,8 +42,8 @@ def subtractBackground(maskedImage, doDisplay = False):
     if doDisplay:
         ds9.mtv(maskedImage)
     bkgControl = afwMath.BackgroundControl(afwMath.NATURAL_SPLINE)
-    bkgControl.setNxSample(max(2, int(maskedImage.getWidth()/256) + 1))
-    bkgControl.setNySample(max(2, int(maskedImage.getHeight()/256) + 1))
+    bkgControl.setNxSample(int(maskedImage.getWidth() // BackgroundCells) + 1)
+    bkgControl.setNySample(int(maskedImage.getHeight() // BackgroundCells) + 1)
     bkgControl.sctrl.setNumSigmaClip(3)
     bkgControl.sctrl.setNumIter(3)
 
@@ -106,18 +108,21 @@ See makeCoadd_policy.paf for documentation
             
             print "Subtract background"
             subtractBackground(exposure.getMaskedImage())
+            if saveDebugImages:
+                exposure.writeFits("bgsub%s" % (fileName,))
             
             if not coadd:
                 print "First exposure is the reference: warp but do not psf-match"
-                coadd = coaddChiSquared.Coadd(exposure, makeCoaddPolicy)
+                coadd = coaddChiSq.Coadd(exposure, makeCoaddPolicy)
                 if saveDebugImages:
                     warpedExposure = coadd.getWarpedReferenceExposure()
                     warpedExposure.writeFits("warped%s" % (fileName,))
             else:
                 print "Warp, psf-match and add to coadd"
-                warpedExposure = coadd.addExposure(exposure)
+                warpedExposure, psfMatchedExposure = coadd.addExposure(exposure)[0:2]
                 if saveDebugImages:
                     warpedExposure.writeFits("warped%s" % (fileName,))
+                    psfMatchedExposure.writeFits("psfMatched%s" % (fileName,))
 
     weightMap = coadd.getWeightMap()
     weightMap.writeFits(weightOutName)
