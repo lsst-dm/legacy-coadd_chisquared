@@ -13,7 +13,7 @@ allowedMaskPlanes: "BAD SAT INTRP"
 # * all exposures are assumed to match the reference in WCS, size and PSF
 # * all other policy entries are ignored except allowedMaskPlanes and saveDebugImages
 # * the coadd matches the reference exposure's WCS and size
-warpExposures: true
+doWarpExposures: true
 
 # resolution of coadd/input images along x and y; larger values produce more pixels in the coadd
 resolutionFactor: 1.0

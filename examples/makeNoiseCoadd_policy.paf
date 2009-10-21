@@ -1,0 +1,25 @@
+#<? cfg paf policy ?>
+#
+# default policy for makeCoadd.py example
+
+# save intermediate images?
+saveDebugImages: true
+
+# shape of images
+imageShape: 256 256
+
+# image sigma
+imageSigma: 1.0
+
+# constant variance
+variance: 1.0
+
+# pixels with these mask plane bits other than these are omitted from the coadd
+# not relevant for pure noise images, but use the usual default
+allowedMaskPlanes: "BAD SAT INTRP"
+
+# warp and psf-match exposures to match the reference exposure?
+# no need for pure noise images
+doWarpExposures: false
+
+
