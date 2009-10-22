@@ -18,8 +18,9 @@ class Coadd(object):
         
         Inputs:
         - referenceExposure: the first exposure to add to the reference.
-            If matchPolicy is None then the coadd has the identical wcs and size.
-            Otherwise the coadd size is determined by resolutionFactor.
+            If doWarpExposures is None then the coadd has the identical wcs and size.
+            Otherwise the coadd WCS is the referenceExposure WCS with distortion terms removed
+            and resolution scaled by resolutionFactor.
         - policy: Parameters include:
             - doWarpExposures: if True then warp and psf-match each exposure to match the reference exposure;
                 otherwise assume this has already been done.

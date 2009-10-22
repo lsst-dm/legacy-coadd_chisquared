@@ -36,8 +36,8 @@ void coaddChiSq::addToCoadd(
     lsst::afw::image::MaskPixel const badPixelMask, ///< skip input pixel if input mask | badPixelMask != 0
     WeightPixelT weight ///< relative weight of this image
 ) {
-    typedef typename afwImage::MaskedImage<CoaddPixelT, afwImage::MaskPixel, afwImage::VariancePixel> CoaddT;
-    typedef typename afwImage::Image<WeightPixelT> WeightMapT;
+    typedef typename afwImage::MaskedImage<CoaddPixelT, afwImage::MaskPixel, afwImage::VariancePixel> Coadd;
+    typedef typename afwImage::Image<WeightPixelT> WeightMap;
     
     if (coadd.getDimensions() != maskedImage.getDimensions()) {
         throw LSST_EXCEPT(pexExcept::InvalidParameterException, \
@@ -50,10 +50,10 @@ void coaddChiSq::addToCoadd(
 
     // Set the pixels row by row, to avoid repeated checks for end-of-row
     for (int y = 0, endY = maskedImage.getHeight(); y != endY; ++y) {
-        typename CoaddT::const_x_iterator maskedImageIter = maskedImage.row_begin(y);
-        typename CoaddT::const_x_iterator const maskedImageEndIter = maskedImage.row_end(y);
-        typename CoaddT::x_iterator coaddIter = coadd.row_begin(y);
-        typename WeightMapT::x_iterator weightMapIter = weightMap.row_begin(y);
+        typename Coadd::const_x_iterator maskedImageIter = maskedImage.row_begin(y);
+        typename Coadd::const_x_iterator const maskedImageEndIter = maskedImage.row_end(y);
+        typename Coadd::x_iterator coaddIter = coadd.row_begin(y);
+        typename WeightMap::x_iterator weightMapIter = weightMap.row_begin(y);
         for (; maskedImageIter != maskedImageEndIter; ++maskedImageIter, ++coaddIter, ++weightMapIter) {
             if ((maskedImageIter.mask() & badPixelMask) == 0) {
                 CoaddPixelT value = maskedImageIter.image() / std::sqrt(maskedImageIter.variance());
