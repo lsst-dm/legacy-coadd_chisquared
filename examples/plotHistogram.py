@@ -31,8 +31,9 @@ coaddData = coadd[0].data
 # undo normalization
 coaddData *= float(nImages)
 # get rid of nans and take square root
-goodData = numpy.sqrt(numpy.ma.array(coaddData.flat, mask=numpy.isnan(coaddData.flat)).compressed())
-hist, binEdges = numpy.histogram(goodData, bins=NBins)
+goodData = numpy.extract(numpy.isfinite(coaddData.flat), coaddData.flat)
+sqrtGoodData = numpy.sqrt(goodData)
+hist, binEdges = numpy.histogram(sqrtGoodData, bins=NBins)
 if UseLogForY:
     dataY = numpy.log10(numpy.where(hist > 1.0, hist, 1.0))
 else:
@@ -49,11 +50,16 @@ else:
 pyplot.xlabel('sqrt of sum of (counts/noise)^2')
 
 # plot chiSq probability distribution
-x = dataX
-chiSqDist = numpy.power(x, (nImages / 2.0) - 1) * numpy.exp(-x / 2.0)
-# need some way to scale it properly, but for now just chuck in a factor
-# that will get it in the ballpark
-chiSqDist *= 50
+chiSqX = dataX**2
+chiSqDist = numpy.power(chiSqX, (nImages / 2.0) - 1) * numpy.exp(-chiSqX / 2.0)
+
+# fit scale by fitting points up to peak in histogram (crude but it's a start)
+maxPos = hist.argmax()
+goodVals = hist[0:maxPos] > 1
+scaleFactors = numpy.extract(goodVals, hist[0:maxPos] / chiSqDist[0:maxPos])
+weights = numpy.extract(goodVals, hist[0:maxPos])
+meanScaleFactor = numpy.average(scaleFactors, weights=weights)
+chiSqDist *= meanScaleFactor
 if UseLogForY:
     chiSqDistY = numpy.log10(numpy.where(chiSqDist > 1.0, chiSqDist, 1.0))
 else:
