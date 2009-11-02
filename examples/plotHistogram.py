@@ -10,8 +10,9 @@ import numpy
 import pyfits
 import matplotlib.pyplot as pyplot
 
-NBins = 200
+NBins = 500
 UseLogForY = False
+UseSqrtForX = False
 
 if __name__ == "__main__":
     helpStr = """Usage: plotHistogram.py coaddfile nImages
@@ -32,25 +33,31 @@ coaddData = coadd[0].data
 coaddData *= float(nImages)
 # get rid of nans and take square root
 goodData = numpy.extract(numpy.isfinite(coaddData.flat), coaddData.flat)
-sqrtGoodData = numpy.sqrt(goodData)
-hist, binEdges = numpy.histogram(sqrtGoodData, bins=NBins)
+hist, binEdges = numpy.histogram(goodData, bins=NBins)
 if UseLogForY:
     dataY = numpy.log10(numpy.where(hist > 1.0, hist, 1.0))
 else:
     dataY = hist
 
 dataX = binEdges[0:-1]
+if UseSqrtForX:
+    plotDataX = numpy.sqrt(dataX)
+else:
+    plotDataX = dataX
 
 # plot log10(frequency) vs. sqrt of value
-pyplot.plot(dataX, dataY, drawstyle="steps")
+pyplot.plot(plotDataX, dataY, drawstyle="steps")
 if UseLogForY:
     pyplot.ylabel('log10 frequency')
 else:
     pyplot.ylabel('frequency')
-pyplot.xlabel('sqrt of sum of (counts/noise)^2')
+if UseSqrtForX:
+    pyplot.xlabel('sqrt of sum of (counts/noise)^2')
+else:
+    pyplot.xlabel('sum of (counts/noise)^2')
 
 # plot chiSq probability distribution
-chiSqX = dataX**2
+chiSqX = dataX
 chiSqDist = numpy.power(chiSqX, (nImages / 2.0) - 1) * numpy.exp(-chiSqX / 2.0)
 
 # fit scale by fitting points up to peak in histogram (crude but it's a start)
@@ -64,6 +71,6 @@ if UseLogForY:
     chiSqDistY = numpy.log10(numpy.where(chiSqDist > 1.0, chiSqDist, 1.0))
 else:
     chiSqDistY = chiSqDist
-pyplot.plot(dataX, chiSqDistY)
+pyplot.plot(plotDataX, chiSqDistY)
 
 pyplot.show()
