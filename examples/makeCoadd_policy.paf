@@ -63,7 +63,7 @@ psfMatchPolicy: {
     #
     # For standard processing a value like 10 would be acceptable
     # 
-    detThreshold: 15.0
+    detThreshold: 5.0
     
     ######
     # Minimum number of clean candidates in the image
@@ -75,12 +75,6 @@ psfMatchPolicy: {
     # not found
     #
     detThresholdScaling: 0.5
-    
-    ######
-    # How low can you go
-    #
-    detThresholdMin: 10.0
-    
     
     
     ####################################
@@ -100,7 +94,7 @@ psfMatchPolicy: {
     # NOTE : if "alard-lupton" you likely want to turn off
     #        "usePcaForSpatialKernel" down below
     #
-    kernelBasisSet: "delta-function"
+    kernelBasisSet: "alard-lupton"
     
     ######
     # Size of the convolution kernel
@@ -227,7 +221,7 @@ psfMatchPolicy: {
     #   kernelSumClipping:     true
     #   spatialKernelClipping: false
     # 
-    spatialKernelOrder: 2
+    spatialKernelOrder: 0
     spatialBgOrder:     1
     
     ######
