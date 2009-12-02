@@ -17,8 +17,12 @@ variance: 1.0
 allowedMaskPlanes: "BAD SAT INTRP"
 
 # warp and psf-match exposures to match the reference exposure?
-# no need for pure noise images
-doWarpExposures: false
+# warp, but do not psf-match (since there's no way to do it)
+doWarpExposures: true
 enablePSFMatching: false
 
+# resolution of coadd/input images along x and y; larger values produce more pixels in the coadd
+resolutionFactor: 1.0
 
+# name of warping kernel, e.g. lanczos4 or bilinear
+warpingKernelName: lanczos3

@@ -1,25 +1,29 @@
 #<? cfg paf policy ?>
-#
-# default policy for makeCoadd.py example
 
 # save intermediate images?
-saveDebugImages: true
+saveDebugImages: false
 
 # pixels with these mask plane bits other than these are omitted from the coadd
 allowedMaskPlanes: "BAD SAT INTRP"
 
 # warp and psf-match exposures to match the reference exposure?
+# doWarpExposures:
 # if false then:
-# * all exposures are assumed to match the reference in WCS, size and PSF
+# * all exposures are assumed to match the reference in WCS and size
 # * all other policy entries are ignored except allowedMaskPlanes and saveDebugImages
 # * the coadd matches the reference exposure's WCS and size
+# * enablePSFMatching is ignored
+# enablePSFMatching:
+# - if true then images are/are not PSF-matched if doWarpExposures is true/false
+# - if false then images are not PSF-matched even if doWarpExposures is true
 doWarpExposures: true
+enablePSFMatching: false
 
 # resolution of coadd/input images along x and y; larger values produce more pixels in the coadd
 resolutionFactor: 1.0
 
 # name of warping kernel, e.g. lanczos4 or bilinear
-warpingKernelName: lanczos3
+warpingKernelName: lanczos4
 
 psfMatchPolicy: {
     ####################################

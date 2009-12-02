@@ -28,7 +28,7 @@ import lsst.coadd.utils as coaddUtils
 import lsst.coadd.chisquared as coaddChiSq
 
 BaseDir = os.path.dirname(__file__)
-DefPolicyPath = os.path.join(BaseDir, "makeCoadd_policy.paf")
+PolicyPath = os.path.join(BaseDir, "makeCoadd_policy.paf")
 
 BackgroundCells = 256
 
@@ -56,10 +56,10 @@ def subtractBackground(maskedImage, doDisplay = False):
 
 if __name__ == "__main__":
     pexLog.Trace.setVerbosity('lsst.coadd', 5)
-    helpStr = """Usage: makeCoadd.py coaddfile indata
+    helpStr = """Usage: makeCoadd.py coaddPath indata
 
 where:
-- coaddfile is the desired name or path of the output coadd
+- coaddPath is the desired name or path of the output coadd
 - indata is a file containing a list of:
     pathToExposure
   where:
@@ -68,9 +68,8 @@ where:
     this one should have the worst PSF of the data set.
   - empty lines and lines that start with # are ignored.
 
-The policy controlling the parameters is makeCoadd_policy.paf
-See makeCoadd_policy.paf for documentation
-"""
+The policy controlling the parameters is %s
+""" % (PolicyPath,)
     if len(sys.argv) != 3:
         print helpStr
         sys.exit(0)
@@ -84,10 +83,9 @@ See makeCoadd_policy.paf for documentation
     
     indata = sys.argv[2]
 
-    makeCoaddPolicyPath = DefPolicyPath
-    makeCoaddPolicy = pexPolicy.Policy.createPolicy(makeCoaddPolicyPath)
+    policy = pexPolicy.Policy.createPolicy(PolicyPath)
 
-    saveDebugImages = makeCoaddPolicy.getBool("saveDebugImages")
+    saveDebugImages = policy.getBool("saveDebugImages")
 
     # process exposures
     ImageSuffix = "_img.fits"
@@ -113,7 +111,7 @@ See makeCoadd_policy.paf for documentation
             
             if not coadd:
                 print "First exposure is the reference: warp but do not psf-match"
-                coadd = coaddChiSq.Coadd(exposure, makeCoaddPolicy)
+                coadd = coaddChiSq.Coadd(exposure, policy)
                 if saveDebugImages:
                     warpedExposure = coadd.getWarpedReferenceExposure()
                     warpedExposure.writeFits("warped%s" % (fileName,))

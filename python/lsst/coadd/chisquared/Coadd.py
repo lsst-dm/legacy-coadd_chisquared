@@ -22,8 +22,13 @@ class Coadd(object):
             Otherwise the coadd WCS is the referenceExposure WCS with distortion terms removed
             and resolution scaled by resolutionFactor.
         - policy: Parameters include:
-            - doWarpExposures: if True then warp and psf-match each exposure to match the reference exposure;
+            - doWarpExposures: if True then warp and PSF-match each exposure to match the reference exposure;
                 otherwise assume this has already been done.
+            - enablePSFMatching: if True then psf-matching is done if and only if doWarpExposures is True;
+                This is the normal setting and should be used for all science images.
+                If False then PSF-matching is disabled even if doWarpExposures is True;
+                This is intended for testing, e.g. making coadds from noise images
+                (which cannot be PSF-matched).
             - allowedMaskPlanes: a list of space-separated mask names of bits that are allowed in the coadd
             
             The following are only read if doWarpExposures is True:
@@ -45,6 +50,7 @@ class Coadd(object):
         self._referenceExposure = referenceExposure
         self._policy = policy
         self._doWarpExposures = policy.get("doWarpExposures")
+        self._enablePSFMatching = policy.get("enablePSFMatching")
 
         allowedMaskPlanes = policy.get("allowedMaskPlanes").split()
         allowedMask = 0
@@ -69,7 +75,7 @@ class Coadd(object):
         """Add an Exposure to the coadd
         
         If doWarpExposures is True then first warp the exposure to match the WCS of the coadd,
-        and psf-match that to the warped reference Exposure before adding to the result to the coadd.
+        and PSF-match that to the warped reference Exposure before adding to the result to the coadd.
         Otherwise the exposure is assumed to already have been warped and PSF-matched.
         
         Inputs:
@@ -85,21 +91,24 @@ class Coadd(object):
         if self._doWarpExposures:
             # warp exposure
             warpedExposure = self._warpExposure(exposure)
-    
-            # psf-match warped exposure to reference exposure
-            self._log.log(pexLog.Log.INFO, "psf-match masked image")
-            psfMatchedMaskedImage, kernelSum, backgroundModel = coaddPsfMatch.psfMatchMaskedImage(
-                self._warpedReferenceExposure.getMaskedImage(), warpedExposure.getMaskedImage(),
-                self._psfMatchPolicy)
-            addMaskedImage = psfMatchedMaskedImage
-            psfMatchedExposure = afwImage.makeExposure(psfMatchedMaskedImage, self._wcs)
-            weight = 1.0 / kernelSum
+ 
+            if self._enablePSFMatching:
+               # PSF-match warped exposure to reference exposure
+                self._log.log(pexLog.Log.INFO, "PSF-match masked image")
+                psfMatchedMaskedImage, kernelSum, backgroundModel = coaddPsfMatch.psfMatchMaskedImage(
+                    self._warpedReferenceExposure.getMaskedImage(), warpedExposure.getMaskedImage(),
+                    self._psfMatchPolicy)
+                addMaskedImage = psfMatchedMaskedImage
+                psfMatchedExposure = afwImage.makeExposure(psfMatchedMaskedImage, self._wcs)
+            else:
+                self._log.log(pexLog.Log.WARN,
+                    "Do not PSF-match masked image: doWarpExposures true but enablePSFMatching false")
+                psfMatchedExposure = warpedExposure
         else:
             warpedExposure = exposure
             psfMatchedExposure = exposure
-            weight = 1.0
             
-        self._basicAddExposure(psfMatchedExposure, weight)
+        self._basicAddExposure(psfMatchedExposure)
         return (warpedExposure, psfMatchedExposure)
 
     def getCoadd(self):
@@ -134,7 +143,7 @@ class Coadd(object):
         """
         return self._warpedReferenceExposure
 
-    def _basicAddExposure(self, warpedExposure, weight=1.0):
+    def _basicAddExposure(self, warpedExposure):
         """Add a warped and psf-matched exposure to the coadd
 
         Inputs:
@@ -142,9 +151,9 @@ class Coadd(object):
             and have been warped and psf-matched to warped reference exposure.
         - weight: weight of good pixels for the weight map
         """
-        self._log.log(pexLog.Log.INFO, "add masked image to coadd; weight=%0.2f" % (weight,))
+        self._log.log(pexLog.Log.INFO, "add masked image to coadd")
         chisquaredLib.addToCoadd(self._coadd.getMaskedImage(), self._weightMap,
-            warpedExposure.getMaskedImage(), self._badPixelMask, weight)
+            warpedExposure.getMaskedImage(), self._badPixelMask, 1.0)
 
     def _warpExposure(self, exposure):
         """Warp an exposure to match the coadd
