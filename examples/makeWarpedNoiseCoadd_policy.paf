@@ -16,10 +16,8 @@ variance: 1.0
 # not relevant for pure noise images, but use the usual default
 allowedMaskPlanes: "BAD SAT INTRP"
 
-# warp and psf-match exposures to match the reference exposure?
-# warp, but do not psf-match (since there's no way to do it)
+# warp exposures to match the reference exposure?
 doWarpExposures: true
-enablePSFMatching: false
 
 # resolution of coadd/input images along x and y; larger values produce more pixels in the coadd
 resolutionFactor: 1.0

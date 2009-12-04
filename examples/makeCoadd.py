@@ -62,8 +62,8 @@ where:
     pathToExposure
   where:
   - pathToExposure is the path to an Exposure (without the final _img.fits)
-  - the first exposure listed is taken to be the reference exposure;
-    this one should have the worst PSF of the data set.
+  - the first exposure listed is taken to be the reference exposure,
+    which determines the size and WCS of the coadd
   - empty lines and lines that start with # are ignored.
 
 The policy controlling the parameters is %s

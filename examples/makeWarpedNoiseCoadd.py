@@ -115,9 +115,7 @@ saveDebugImages = %s
                     warpedExposure.writeFits("warped%s" % (fileName,))
             else:
                 print "Warp and add this exposure to the coadd"
-                # note: we are not psf-matching so the returned psfMatchedExposure
-                # is identical to the returned warpedExposure
-                warpedExposure, psfMatchedExposure = coadd.addExposure(exposure)[0:2]
+                warpedExposure = coadd.addExposure(exposure)
                 if saveDebugImages:
                     warpedExposure.writeFits("warped%s" % (fileName,))
 

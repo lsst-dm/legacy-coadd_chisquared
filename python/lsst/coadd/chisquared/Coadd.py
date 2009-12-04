@@ -7,7 +7,6 @@ import lsst.afw.math as afwMath
 import lsst.afw.detection as afwDetect
 import lsst.coadd.utils as coaddUtils
 import chisquaredLib
-import lsst.coadd.psfmatched as coaddPsfMatch
 
 __all__ = ["Coadd"]
 
@@ -19,7 +18,7 @@ class Coadd(object):
         - dimensions: dimensions of coadd
         - wcs: WCS of coadd
         - policy: Parameters include:
-            - doWarpExposures: if True then warp and PSF-match each exposure to match the reference exposure;
+            - doWarpExposures: if True then warp each exposure to match the reference exposure;
                 otherwise assume this has already been done.
             - allowedMaskPlanes: a list of space-separated mask names of bits that are allowed in the coadd
             
@@ -29,7 +28,6 @@ class Coadd(object):
         self._log = pexLog.Log(pexLog.Log.getDefaultLog(), "coadd.chisquared.Coadd")
         self._policy = policy
         self._doWarpExposures = policy.get("doWarpExposures")
-        self._enablePSFMatching = policy.get("enablePSFMatching")
 
         allowedMaskPlanes = policy.get("allowedMaskPlanes").split()
         allowedMask = 0
@@ -96,11 +94,11 @@ class Coadd(object):
         return self._weightMap
     
     def _basicAddExposure(self, warpedExposure):
-        """Add a warped and psf-matched exposure to the coadd
+        """Add a an exposure to the coadd; it is assumed to have the same WCS as the coadd
 
         Inputs:
         - warpedExposure: Exposure to add to coadd; must have the background subtracted
-            and have been warped and psf-matched to warped reference exposure.
+            and have been warped to match the WCS of the coadd.
         - weight: weight of good pixels for the weight map
         """
         self._log.log(pexLog.Log.INFO, "add masked image to coadd")
@@ -108,7 +106,7 @@ class Coadd(object):
             warpedExposure.getMaskedImage(), self._badPixelMask, 1.0)
 
     def _warpExposure(self, exposure):
-        """Warp an exposure to match the coadd
+        """Warp an exposure to match the WCS of the coadd
         
         _coadd and _warpingKernel must have been set.
         """
