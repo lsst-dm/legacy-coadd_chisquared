@@ -6,7 +6,6 @@ import lsst.afw.image as afwImage
 import lsst.afw.math as afwMath
 import lsst.afw.detection as afwDetect
 import lsst.coadd.utils as coaddUtils
-import lsst.ip.diffim as ipDiffim
 import chisquaredLib
 import lsst.coadd.psfmatched as coaddPsfMatch
 
