@@ -28,7 +28,6 @@ class Coadd(object):
             - warpingKernelName: name of warping kernel (see lsst.afw.math.makeWarpingKernel)
         """
         self._log = pexLog.Log(pexLog.Log.getDefaultLog(), "coadd.chisquared.Coadd")
-        self._referenceExposure = referenceExposure
         self._policy = policy
         self._doWarpExposures = policy.get("doWarpExposures")
         self._enablePSFMatching = policy.get("enablePSFMatching")
@@ -40,17 +39,15 @@ class Coadd(object):
         self._badPixelMask = 0xFFFF - allowedMask
 
         self._wcs = wcs # for convenience
-        self._coadd = afwImage.ExposureF(dimensions, wcs)
+        blankMaskedImage = afwImage.MaskedImageF(dimensions)
+        self._coadd = afwImage.ExposureF(blankMaskedImage, wcs)
 
         if self._doWarpExposures:
             self._warpingKernel = afwMath.makeWarpingKernel(policy.get("warpingKernelName"))
-            self._warpedReferenceExposure = self._warpExposure(referenceExposure)
         else:
             self._coadd = coaddUtils.makeBlankExposure(referenceExposure)
-            self._warpedReferenceExposure = referenceExposure
         self._wcs = self._coadd.getWcs() # merely a convenience
         self._weightMap = afwImage.ImageF(self._coadd.getMaskedImage().getDimensions(), 0)
-        self._basicAddExposure(self._warpedReferenceExposure)
 
     def addExposure(self, exposure):
         """Add an Exposure to the coadd
@@ -101,11 +98,6 @@ class Coadd(object):
         """
         return self._weightMap
     
-    def getWarpedReferenceExposure(self):
-        """Get the warped reference exposure (for debugging)
-        """
-        return self._warpedReferenceExposure
-
     def _basicAddExposure(self, warpedExposure):
         """Add a warped and psf-matched exposure to the coadd
 

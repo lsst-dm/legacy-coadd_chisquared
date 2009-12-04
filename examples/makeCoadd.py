@@ -104,7 +104,7 @@ The policy controlling the parameters is %s
             
             if not coadd:
                 print "Create coadd"
-                coadd = coaddChiSq.Coadd(exposure.getDimensions(), exposure.getWcs(), policy)
+                coadd = coaddChiSq.Coadd(exposure.getMaskedImage().getDimensions(), exposure.getWcs(), policy)
             
             print "Subtract background"
             subtractBackground(exposure.getMaskedImage())
