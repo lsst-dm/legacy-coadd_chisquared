@@ -86,7 +86,7 @@ saveDebugImages = %s
         
         if not coadd:
             print "Create coadd with exposure %d" % (imInd,)
-            coadd = coaddChiSq.Coadd(exposure.getDimensions(), exposure.getWcs(), policy)
+            coadd = coaddChiSq.Coadd(exposure.getMaskedImage().getDimensions(), exposure.getWcs(), policy)
 
         print "Add exposure %d to coadd" % (imInd,)
         # note that the these noise images are not usually warped, in which case

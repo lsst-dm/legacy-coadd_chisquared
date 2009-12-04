@@ -1,7 +1,7 @@
 #<? cfg paf policy ?>
 
 # save intermediate images?
-saveDebugImages: true
+saveDebugImages: false
 
 # shape of images
 imageShape: 256 256
@@ -16,9 +16,8 @@ variance: 1.0
 # not relevant for pure noise images, but use the usual default
 allowedMaskPlanes: "BAD SAT INTRP"
 
-# warp and psf-match exposures to match the reference exposure?
-# no need for pure noise images
+# warp exposures to match the reference exposure?
+# (no need for pure noise images)
 doWarpExposures: false
-enablePSFMatching: false
 
 

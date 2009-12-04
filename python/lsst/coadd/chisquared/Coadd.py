@@ -44,8 +44,6 @@ class Coadd(object):
 
         if self._doWarpExposures:
             self._warpingKernel = afwMath.makeWarpingKernel(policy.get("warpingKernelName"))
-        else:
-            self._coadd = coaddUtils.makeBlankExposure(referenceExposure)
         self._wcs = self._coadd.getWcs() # merely a convenience
         self._weightMap = afwImage.ImageF(self._coadd.getMaskedImage().getDimensions(), 0)
 
