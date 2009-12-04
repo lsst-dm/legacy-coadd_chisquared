@@ -47,7 +47,7 @@ Alias("install", [
     env.Install(env['prefix'], "python"),
     env.Install(env['prefix'], "include"),
     env.Install(env['prefix'], "lib"),
-    env.Install(env['prefix'], "pipeline"),
+    env.Install(env['prefix'], "policy"),
     env.InstallAs(os.path.join(env['prefix'], "doc", "doxygen"), os.path.join("doc", "htmlDir")),
     env.InstallEups(env['prefix'] + "/ups"),
 ])
