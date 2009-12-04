@@ -13,38 +13,19 @@ import lsst.coadd.psfmatched as coaddPsfMatch
 __all__ = ["Coadd"]
 
 class Coadd(object):
-    def __init__(self, referenceExposure, policy):
+    def __init__(self, dimensions, wcs, policy):
         """Create a chi-squared coadd
         
         Inputs:
-        - referenceExposure: the first exposure to add to the reference.
-            If doWarpExposures is None then the coadd has the identical wcs and size.
-            Otherwise the coadd WCS is the referenceExposure WCS with distortion terms removed
-            and resolution scaled by resolutionFactor.
+        - dimensions: dimensions of coadd
+        - wcs: WCS of coadd
         - policy: Parameters include:
             - doWarpExposures: if True then warp and PSF-match each exposure to match the reference exposure;
                 otherwise assume this has already been done.
-            - enablePSFMatching: if True then psf-matching is done if and only if doWarpExposures is True;
-                This is the normal setting and should be used for all science images.
-                If False then PSF-matching is disabled even if doWarpExposures is True;
-                This is intended for testing, e.g. making coadds from noise images
-                (which cannot be PSF-matched).
             - allowedMaskPlanes: a list of space-separated mask names of bits that are allowed in the coadd
             
-            The following are only read if doWarpExposures is True:
+            The following is only read if doWarpExposures is True:
             - warpingKernelName: name of warping kernel (see lsst.afw.math.makeWarpingKernel)
-            - resolutionFactor: resolution of coadd (along x or y) relative to referenceMaskedImage
-            - psfMatchPolicy: a sub-policy containing:
-                - kernelCols/Rows: size of PSF-matching kernel
-                - fpNpixMin
-                - fpNpixMax
-                - fpGrowKsize
-                - minCleanFp
-                - detThreshold
-                - detThresholdScaling
-                - detThresholdMin
-                - detThresholdType
-                ...
         """
         self._log = pexLog.Log(pexLog.Log.getDefaultLog(), "coadd.chisquared.Coadd")
         self._referenceExposure = referenceExposure
@@ -58,11 +39,11 @@ class Coadd(object):
             allowedMask |= 1 << afwImage.MaskU.getMaskPlane(maskPlaneName)
         self._badPixelMask = 0xFFFF - allowedMask
 
+        self._wcs = wcs # for convenience
+        self._coadd = afwImage.ExposureF(dimensions, wcs)
+
         if self._doWarpExposures:
-            self._psfMatchPolicy = policy.get("psfMatchPolicy")
             self._warpingKernel = afwMath.makeWarpingKernel(policy.get("warpingKernelName"))
-            resolutionFactor = policy.get("resolutionFactor")
-            self._coadd = coaddUtils.makeBlankCoadd(referenceExposure, resolutionFactor)
             self._warpedReferenceExposure = self._warpExposure(referenceExposure)
         else:
             self._coadd = coaddUtils.makeBlankExposure(referenceExposure)
@@ -74,42 +55,24 @@ class Coadd(object):
     def addExposure(self, exposure):
         """Add an Exposure to the coadd
         
-        If doWarpExposures is True then first warp the exposure to match the WCS of the coadd,
-        and PSF-match that to the warped reference Exposure before adding to the result to the coadd.
-        Otherwise the exposure is assumed to already have been warped and PSF-matched.
+        If doWarpExposures is True then first warp the exposure to match the WCS of the coadd.
+        Otherwise the exposure is assumed to already have been warped.
         
         Inputs:
-        - exposure: Exposure to add to coadd; must have the background subtracted,
-            and if warpExposure is True then it should have a larger PSF than the reference exposure.
+        - exposure: Exposure to add to coadd; must have the background subtracted.
             
         Returns:
-        - warpedExposure: exposure warped to match the WCS of the coadd;
-            the original exposure if warpExposure false
-        - psfMatchedExposure: warped Exposure psf-mathed to warped reference Exposure;
-            the original exposure if warpExposure false
+        - warpedExposure: exposure warped to match the WCS of the coadd,
+            or the original exposure if doWarpExposure false
         """
         if self._doWarpExposures:
             # warp exposure
             warpedExposure = self._warpExposure(exposure)
- 
-            if self._enablePSFMatching:
-               # PSF-match warped exposure to reference exposure
-                self._log.log(pexLog.Log.INFO, "PSF-match masked image")
-                psfMatchedMaskedImage, kernelSum, backgroundModel = coaddPsfMatch.psfMatchMaskedImage(
-                    self._warpedReferenceExposure.getMaskedImage(), warpedExposure.getMaskedImage(),
-                    self._psfMatchPolicy)
-                addMaskedImage = psfMatchedMaskedImage
-                psfMatchedExposure = afwImage.makeExposure(psfMatchedMaskedImage, self._wcs)
-            else:
-                self._log.log(pexLog.Log.WARN,
-                    "Do not PSF-match masked image: doWarpExposures true but enablePSFMatching false")
-                psfMatchedExposure = warpedExposure
         else:
             warpedExposure = exposure
-            psfMatchedExposure = exposure
             
-        self._basicAddExposure(psfMatchedExposure)
-        return (warpedExposure, psfMatchedExposure)
+        self._basicAddExposure(warpedExposure)
+        return warpedExposure
 
     def getCoadd(self):
         """Get the coadd Exposure, as computed so far

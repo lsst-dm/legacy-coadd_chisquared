@@ -81,18 +81,22 @@ saveDebugImages = %s
     for imInd in range(numImages):
         print "Create exposure %d" % (imInd,)
         maskedImage = makeNoiseMaskedImage(shape=imageShape, sigma=imageSigma, variance=variance)
-        exposure = afwImage.ExposureF(maskedImage)
+        wcs = afwImage.Wcs()
+        exposure = afwImage.ExposureF(maskedImage, wcs)
         
         if not coadd:
             print "Create coadd with exposure %d" % (imInd,)
-            coadd = coaddChiSq.Coadd(exposure, policy)
-        else:
-            print "Add exposure %d to coadd" % (imInd,)
-            coadd.addExposure(exposure)
+            coadd = coaddChiSq.Coadd(exposure.getDimensions(), exposure.getWcs(), policy)
+
+        print "Add exposure %d to coadd" % (imInd,)
+        # note that the these noise images are not usually warped, in which case
+        # the warped exposure will be the same as the original exposure
+        warpedExposure = coadd.addExposure(exposure)
+
         if saveDebugImages:
             expName = "%d_%s" % (imInd, coaddPath)
             print "Save intermediate exposure %s" % (expName,)
-            exposure.writeFits(expName)
+            warpedExposure.writeFits(expName)
 
     print "Save weight map as %s" % (weightOutName,)
     weightMap = coadd.getWeightMap()

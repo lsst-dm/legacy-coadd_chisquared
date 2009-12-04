@@ -4,14 +4,12 @@ from __future__ import with_statement
 This example requires:
 - A set of science exposures
 - A file containing the paths to each, as:
-  exposure1 (the reference exposure)
+  exposure1
   exposure2
   ...
-The first exposure is the reference exposure: this should have the worst seeing
-(because all other exposures are PSF-matched to this one). It is also the exposure
-whose WCS and size are used for the coadd.
+The first exposure's WCS and size are used for the coadd.
 
-@todo: modify to use ip_diffim dictionary as the base policy for psf-matching once Policy supports this.
+@todo: modify to use ChiSquaredCoaddDictionary as the base dictionary
 """
 import os
 import sys
@@ -104,23 +102,19 @@ The policy controlling the parameters is %s
             print "Processing exposure %s" % (filePath,)
             exposure = afwImage.ExposureF(filePath)
             
+            if not coadd:
+                print "Create coadd"
+                coadd = coaddChiSq.Coadd(exposure.getDimensions(), exposure.getWcs(), policy)
+            
             print "Subtract background"
             subtractBackground(exposure.getMaskedImage())
             if saveDebugImages:
                 exposure.writeFits("bgsub%s" % (fileName,))
-            
-            if not coadd:
-                print "First exposure is the reference: warp but do not psf-match"
-                coadd = coaddChiSq.Coadd(exposure, policy)
-                if saveDebugImages:
-                    warpedExposure = coadd.getWarpedReferenceExposure()
-                    warpedExposure.writeFits("warped%s" % (fileName,))
-            else:
-                print "Warp, psf-match and add to coadd"
-                warpedExposure, psfMatchedExposure = coadd.addExposure(exposure)[0:2]
-                if saveDebugImages:
-                    warpedExposure.writeFits("warped%s" % (fileName,))
-                    psfMatchedExposure.writeFits("psfMatched%s" % (fileName,))
+
+            print "Warp and add to coadd"
+            warpedExposure = coadd.addExposure(exposure)
+            if saveDebugImages:
+                warpedExposure.writeFits("warped%s" % (fileName,))
 
     weightMap = coadd.getWeightMap()
     weightMap.writeFits(weightOutName)
