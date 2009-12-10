@@ -17,13 +17,7 @@ class Coadd(object):
         Inputs:
         - dimensions: dimensions of coadd
         - wcs: WCS of coadd
-        - policy: Parameters include:
-            - doWarpExposures: if True then warp each exposure to match the reference exposure;
-                otherwise assume this has already been done.
-            - allowedMaskPlanes: a list of space-separated mask names of bits that are allowed in the coadd
-            
-            The following is only read if doWarpExposures is True:
-            - warpingKernelName: name of warping kernel (see lsst.afw.math.makeWarpingKernel)
+        - policy: see policy/chiSquaredCoadd_dict.paf
         """
         self._log = pexLog.Log(pexLog.Log.getDefaultLog(), "coadd.chisquared.Coadd")
         self._policy = policy
@@ -80,7 +74,7 @@ class Coadd(object):
         coaddUtils.setCoaddEdgeBits(scaledMaskedImage.getMask(), self._weightMap)
         
         # scale non-edge pixels by weight map
-        coaddUtils.divide(scaledMaskedImage, self._weightMap)
+        scaledMaskedImage /= self._weightMap
         
         return afwImage.makeExposure(scaledMaskedImage, self._wcs)
         

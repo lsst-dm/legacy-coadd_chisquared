@@ -18,7 +18,7 @@ definitions: {
         type: "bool"
         minOccurs: 1
         maxOccurs: 1
-        default: True
+        default: true
     }        
     warpingKernelName: {
         description: "Name of warping kernel; see afwMath.makeWarpingKernel for allowed names."

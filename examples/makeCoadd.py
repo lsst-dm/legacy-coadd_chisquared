@@ -8,14 +8,9 @@ This example requires:
   exposure2
   ...
 The first exposure's WCS and size are used for the coadd.
-
-@todo: modify to use ChiSquaredCoaddDictionary as the base dictionary
 """
 import os
 import sys
-import math
-
-import numpy
 
 import lsst.pex.logging as pexLog
 import lsst.pex.policy as pexPolicy
@@ -25,10 +20,12 @@ import lsst.afw.display.ds9 as ds9
 import lsst.coadd.utils as coaddUtils
 import lsst.coadd.chisquared as coaddChiSq
 
-BaseDir = os.path.dirname(__file__)
-PolicyPath = os.path.join(BaseDir, "makeCoadd_policy.paf")
+SaveDebugImages = False
 
 BackgroundCells = 256
+
+PackageName = "coadd_chisquared"
+PolicyDictName = "chiSquaredCoadd_dict.paf"
 
 def subtractBackground(maskedImage, doDisplay = False):
     """Subtract the background from a MaskedImage
@@ -39,7 +36,7 @@ def subtractBackground(maskedImage, doDisplay = False):
     """
     if doDisplay:
         ds9.mtv(maskedImage)
-    bkgControl = afwMath.BackgroundControl(afwMath.NATURAL_SPLINE)
+    bkgControl = afwMath.BackgroundControl(afwMath.Interpolate.NATURAL_SPLINE)
     bkgControl.setNxSample(int(maskedImage.getWidth() // BackgroundCells) + 1)
     bkgControl.setNySample(int(maskedImage.getHeight() // BackgroundCells) + 1)
     bkgControl.sctrl.setNumSigmaClip(3)
@@ -54,7 +51,7 @@ def subtractBackground(maskedImage, doDisplay = False):
 
 if __name__ == "__main__":
     pexLog.Trace.setVerbosity('lsst.coadd', 5)
-    helpStr = """Usage: makeCoadd.py coaddPath indata
+    helpStr = """Usage: makeCoadd.py coaddPath indata [policy]
 
 where:
 - coaddPath is the desired name or path of the output coadd
@@ -65,10 +62,11 @@ where:
   - the first exposure listed is taken to be the reference exposure,
     which determines the size and WCS of the coadd
   - empty lines and lines that start with # are ignored.
+- policy: path to a policy file
 
-The policy controlling the parameters is %s
-""" % (PolicyPath,)
-    if len(sys.argv) != 3:
+The policy dictionary is: policy/%s
+""" % (PolicyDictName,)
+    if len(sys.argv) not in (3, 4):
         print helpStr
         sys.exit(0)
     
@@ -80,10 +78,16 @@ The policy controlling the parameters is %s
     weightOutName = outName + "_weight.fits"
     
     indata = sys.argv[2]
+    
+    if len(sys.argv) > 3:
+        policyPath = sys.argv[3]
+        policy = pexPolicy.Policy(policyPath)
+    else:
+        policy = pexPolicy.Policy()
 
-    policy = pexPolicy.Policy.createPolicy(PolicyPath)
-
-    saveDebugImages = policy.getBool("saveDebugImages")
+    policyFile = pexPolicy.DefaultPolicyFile(PackageName, PolicyDictName, "policy")
+    defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
+    policy.mergeDefaults(defPolicy.getDictionary())
 
     # process exposures
     ImageSuffix = "_img.fits"
@@ -108,12 +112,12 @@ The policy controlling the parameters is %s
             
             print "Subtract background"
             subtractBackground(exposure.getMaskedImage())
-            if saveDebugImages:
+            if SaveDebugImages:
                 exposure.writeFits("bgsub%s" % (fileName,))
 
             print "Warp and add to coadd"
             warpedExposure = coadd.addExposure(exposure)
-            if saveDebugImages:
+            if SaveDebugImages:
                 warpedExposure.writeFits("warped%s" % (fileName,))
 
     weightMap = coadd.getWeightMap()
