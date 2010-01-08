@@ -23,11 +23,8 @@ class Coadd(object):
         self._policy = policy
         self._doWarpExposures = policy.get("doWarpExposures")
 
-        allowedMaskPlanes = policy.get("allowedMaskPlanes").split()
-        allowedMask = 0
-        for maskPlaneName in allowedMaskPlanes:
-            allowedMask |= 1 << afwImage.MaskU.getMaskPlane(maskPlaneName)
-        self._badPixelMask = 0xFFFF - allowedMask
+        allowedMaskPlanes = policy.get("allowedMaskPlanes")
+        self._badPixelMask = coaddUtils.makeBitMask(allowedMaskPlanes.split(), doInvert=True)
 
         self._wcs = wcs # for convenience
         blankMaskedImage = afwImage.MaskedImageF(dimensions)
