@@ -1,5 +1,4 @@
-setupRequired(afw)
-setupRequired(coadd_utils)
+setupRequired(coadd_utils >= svn12558)
 
 setupOptional(afwdata)
 
