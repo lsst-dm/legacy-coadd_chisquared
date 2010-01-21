@@ -7,7 +7,7 @@ import lsst.SConsUtils as scons
 
 env = scons.makeEnv(
     "coadd_chisquared",
-    r"$HeadURL: svn+ssh://svn.lsstcorp.org/DMS/coadd/chisquared/trunk/SConstruct $",
+    r"$HeadURL$",
     [
         ["boost", "boost/version.hpp", "boost_system:C++"],
         ["boost", "boost/version.hpp", "boost_filesystem:C++"],
