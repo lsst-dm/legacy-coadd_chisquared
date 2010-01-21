@@ -11,12 +11,6 @@ Python interface to lsst::coadd::chisquared functions and classes
 %{
 #include "boost/cstdint.hpp"
 #include "lsst/coadd/chisquared.h"
-#include "lsst/afw/geom.h" /* why is this needed?
-Without it I see the following when compiling utilsLib_wrap:
-python/lsst/coadd/utils/utilsLib_wrap.cc: In function 'void* _p_lsst__afw__geom__ellipses__QuadrupoleTo_p_lsst__afw__geom__ellipses__BaseCore(void*, int*)':
-python/lsst/coadd/utils/utilsLib_wrap.cc:13321: error: 'lsst::afw::geom::ellipses' has not been declared
-...
-*/
 %}
 
 %include "lsst/p_lsstSwig.i"
