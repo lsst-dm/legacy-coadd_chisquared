@@ -11,9 +11,10 @@ import pyfits
 import matplotlib.pyplot as pyplot
 
 NBins = 500
-UseLogForY = True
+UseLogForY = False
 UseSqrtForX = False
 
+ChiSqOffsets = (0.0, 0.25, 0.50, 0.75, 1.0)
 
 def clipOutliers(arr):
     """Clip values 3 sigma outside the median
@@ -48,12 +49,13 @@ def plotHistogram(coaddName, weightMapName):
 
     # undo normalization
     goodData *= float(chiSqOrder)
-    # get rid of large values -- clearly not noise
+    # get rid of large values -- these are clearly not noise
     tempLen = len(goodData)
     goodData = numpy.extract(goodData < 50, goodData)
     numBig = tempLen - len(goodData)
-    print "ChiSquared order = %d; %d usable pixels; %d have wrong order; %d are not finite; %d >= 50" % \
-        (chiSqOrder, len(goodData), numWrongOrder, numNotFinite, numBig)
+    numTotal = len(coaddData.flat)
+    print "ChiSquared order = %d; %d good pixels; %0.1f%% had wrong order; %0.1f%% were not finite; %0.1f%% >= 50" % \
+        (chiSqOrder, len(goodData), numWrongOrder * 100.0 / numTotal, numNotFinite * 100.0 / numTotal, numBig * 100.0 / numTotal)
     
     hist, binEdges = numpy.histogram(goodData, bins=NBins)
     hist = numpy.array(hist, dtype=float)
@@ -70,8 +72,11 @@ def plotHistogram(coaddName, weightMapName):
     else:
         plotDataX = dataX
 
+    plotNameSet = []
+
     # plot histogram: log10(frequency) vs. value
-    pyplot.plot(plotDataX, dataY, drawstyle="steps")
+    plotNameSet.append((pyplot.plot(plotDataX, dataY, drawstyle="steps"), "Data %0d" % (chiSqOrder,)))
+    pyplot.suptitle("Histogram for Chi Squared Coadd %s" % (os.path.basename(coaddName,)))
     if UseLogForY:
         pyplot.ylabel('log10 frequency')
     else:
@@ -82,33 +87,48 @@ def plotHistogram(coaddName, weightMapName):
     else:
         pyplot.xlabel('sum of (counts/noise)^2')
 
-    # plot chiSq probability distribution
-    chiSqX = dataX
-    chiSqDist = numpy.power(chiSqX, (chiSqOrder / 2.0) - 1) * numpy.exp(-chiSqX / 2.0)
-    chiSqDist /= chiSqDist.sum()
-    if UseLogForY:
-        chiSqDistY = numpy.log10(chiSqDist)
-    else:
-        chiSqDistY = chiSqDist
-    pyplot.plot(plotDataX, chiSqDistY)
+    maxYInd = None
+    for chiSqFudge in ChiSqOffsets:
+        fudgedOrder = chiSqOrder + chiSqFudge
+    
+        # plot chiSq probability distribution
+        chiSqX = dataX
+        chiSqDist = numpy.power(chiSqX, (fudgedOrder / 2.0) - 1) * numpy.exp(-chiSqX / 2.0)
+        chiSqDist /= chiSqDist.sum()
+        
+        # normalize chiSqDist to match data
+        endInd = chiSqDist.argmax() # index to peak of chi squared distribution
+        if chiSqFudge == 0.0:
+            maxYInd = endInd
+        startInd = endInd / 2
+        scaleArr = hist[startInd:endInd] / chiSqDist[startInd:endInd]
+        chiSqDist *= scaleArr.mean()
+        
+        if UseLogForY:
+            chiSqDistY = numpy.log10(chiSqDist)
+        else:
+            chiSqDistY = chiSqDist
+        plotNameSet.append((pyplot.plot(plotDataX, chiSqDistY), "ChiSq %0.1f" % (fudgedOrder,)))
+
+    plots, plotNames = zip(*plotNameSet)
+    pyplot.legend(plots, plotNames, loc=0)
 
     # set plot limits
-    goodY = numpy.extract(numpy.isfinite(dataY), dataY)
-    minY = goodY.min()
-    maxY = goodY.max()
-    maxYInd = goodY.argmax()
-    tailMinY = goodY[maxYInd:].min()
+    # compute min and max, ignoring non-finite values
+    finiteYValues = numpy.extract(numpy.isfinite(dataY), dataY)
+    minY = finiteYValues.min()
+    maxY = finiteYValues.max()
+    # compute min of tail (portion after maximum), ignoring non-finite values
+    tailMinY = numpy.extract(numpy.isfinite(dataY[maxYInd:]), dataY[maxYInd:]).min()
     yRange = maxY - tailMinY
     # plot out to where tail falls to 1% of max value
     yEndVal = tailMinY + (yRange * 0.01)
-    endInd = numpy.where(goodY[maxYInd:] <= yEndVal)[0][0] + maxYInd
-    endInd = len(goodY)-1
+    endInd = numpy.where(dataY[maxYInd:] <= yEndVal)[0][0] + maxYInd
     pyplot.xlim((0, plotDataX[endInd]))
     yMargin = yRange * 0.05
     pyplot.ylim((minY, maxY + yMargin))
     
     pyplot.show()
-
 
 if __name__ == "__main__":
     helpStr = """Usage: plotHistogram.py coaddfile chiSqOrder
