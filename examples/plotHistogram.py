@@ -75,16 +75,17 @@ def plotHistogram(coaddName, chiSqOrder):
         chiSqDistY = chiSqDist
     pyplot.plot(plotDataX, chiSqDistY)
 
-    # set plot limits    
+    # set plot limits
     goodY = numpy.extract(numpy.isfinite(dataY), dataY)
-    maxY = goodY.max()
     minY = goodY.min()
-    yRange = maxY - minY
-    # plot out to where Y falls to 1% of max value
+    maxY = goodY.max()
     maxYInd = goodY.argmax()
-    yEndVal = minY + (yRange * 0.01)
-    smallYIndices = numpy.where(goodY < yEndVal)[0]
-    endInd = numpy.extract(smallYIndices > maxYInd, smallYIndices)[0]
+    tailMinY = goodY[maxYInd:].min()
+    yRange = maxY - tailMinY
+    # plot out to where tail falls to 1% of max value
+    yEndVal = tailMinY + (yRange * 0.01)
+    endInd = numpy.where(goodY[maxYInd:] <= yEndVal)[0][0] + maxYInd
+    endInd = len(goodY)-1
     pyplot.xlim((0, plotDataX[endInd]))
     yMargin = yRange * 0.05
     pyplot.ylim((minY, maxY + yMargin))
