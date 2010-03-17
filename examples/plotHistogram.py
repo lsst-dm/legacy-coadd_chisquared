@@ -29,14 +29,31 @@ def clipOutliers(arr):
     return numpy.extract((arr >= minGood) & (arr <= maxGood), arr)
 
 
-def plotHistogram(coaddName, chiSqOrder):
+def plotHistogram(coaddName, weightMapName):
+    """Plot a histogram given paths to the coadd and weight map
+    """
     coadd = pyfits.open(coaddName)
+    weightMap = pyfits.open(weightMapName)
+    weightMapData = weightMap[0].data
+    chiSqOrder = weightMapData.max()
     coaddData = coadd[0].data
+    if coaddData.shape != weightMapData.shape:
+        raise RuntimeError("Image shape = %s != %s = weight map shape" % \
+            (coaddData.shape, weightMapData.shape))
+    goodData = numpy.extract(weightMapData.flat == chiSqOrder, coaddData.flat)
+    numWrongOrder = len(coaddData.flat) - len(goodData)
+    tempLen = len(goodData)
+    goodData = numpy.extract(numpy.isfinite(goodData), goodData)
+    numNotFinite = tempLen - len(goodData)
+
     # undo normalization
-    coaddData *= float(chiSqOrder)
-    # get rid of nans and infs
-    goodData = numpy.extract(numpy.isfinite(coaddData.flat), coaddData.flat)
+    goodData *= float(chiSqOrder)
+    # get rid of large values -- clearly not noise
+    tempLen = len(goodData)
     goodData = numpy.extract(goodData < 50, goodData)
+    numBig = tempLen - len(goodData)
+    print "ChiSquared order = %d; %d usable pixels; %d have wrong order; %d are not finite; %d >= 50" % \
+        (chiSqOrder, len(goodData), numWrongOrder, numNotFinite, numBig)
     
     hist, binEdges = numpy.histogram(goodData, bins=NBins)
     hist = numpy.array(hist, dtype=float)
@@ -97,14 +114,18 @@ if __name__ == "__main__":
     helpStr = """Usage: plotHistogram.py coaddfile chiSqOrder
 
 where:
-- coaddfile is the path of the coadd
-- chiSqOrder is the chi squared order for the best fit line; typically the # of images
+- coaddfile is the path of the coadd image
 """
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 2:
         print helpStr
         sys.exit(0)
     
     coaddName = sys.argv[1]
-    chiSqOrder = float(sys.argv[2])
+    for suffix in ("_img.fits", ".fits"):
+        if coaddName.lower().endswith(suffix):
+            weightMapName = coaddName[0:-len(suffix)] + "_weight.fits"
+            break
+    else:
+        raise RuntimeError("Cannot find weight map")
 
-    plotHistogram(coaddName, chiSqOrder)
+    plotHistogram(coaddName, weightMapName)
