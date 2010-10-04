@@ -12,8 +12,9 @@ imageSigma: 1.0
 # constant variance
 variance: 1.0
 
-# pixels with these mask plane bits other than these are omitted from the coadd
-# not relevant for pure noise images, but use the usual default
+# Mask planes to allow (ignore) when rejecting masked pixels.
+# Specify as a space-separated list of mask plane names.
+# Not relevant for pure noise images, but use the usual default
 allowedMaskPlanes: "BAD SAT INTRP"
 
 # warp exposures to match the reference exposure?
