@@ -45,7 +45,7 @@ import lsst.coadd.chisquared as coaddChiSq
 
 SaveDebugImages = False
 
-BackgroundCells = 256
+BackgroundCells = 512
 
 PackageName = "coadd_chisquared"
 PolicyDictName = "chiSquaredCoadd_dict.paf"
