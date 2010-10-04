@@ -45,7 +45,7 @@ import lsst.coadd.chisquared as coaddChiSq
 
 SaveDebugImages = False
 
-BackgroundCells = 512
+BackgroundCellSize = 512
 
 PackageName = "coadd_chisquared"
 PolicyDictName = "chiSquaredCoadd_dict.paf"
@@ -60,8 +60,8 @@ def subtractBackground(maskedImage, doDisplay = False):
     if doDisplay:
         ds9.mtv(maskedImage)
     bkgControl = afwMath.BackgroundControl(afwMath.Interpolate.NATURAL_SPLINE)
-    bkgControl.setNxSample(int(maskedImage.getWidth() // BackgroundCells) + 1)
-    bkgControl.setNySample(int(maskedImage.getHeight() // BackgroundCells) + 1)
+    bkgControl.setNxSample(int(maskedImage.getWidth() // BackgroundCellSize) + 1)
+    bkgControl.setNySample(int(maskedImage.getHeight() // BackgroundCellSize) + 1)
     bkgControl.sctrl.setNumSigmaClip(3)
     bkgControl.sctrl.setNumIter(3)
 
