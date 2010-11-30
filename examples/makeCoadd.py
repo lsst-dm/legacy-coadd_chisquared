@@ -50,28 +50,6 @@ BackgroundCellSize = 512
 PackageName = "coadd_chisquared"
 PolicyDictName = "chiSquaredCoadd_dict.paf"
 
-def subtractBackground(maskedImage, doDisplay = False):
-    """Subtract the background from a MaskedImage
-    
-    Note: at present the mask and variance are ignored, but they might used be someday.
-    
-    Returns the background object returned by afwMath.makeBackground.
-    """
-    if doDisplay:
-        ds9.mtv(maskedImage)
-    bkgControl = afwMath.BackgroundControl(afwMath.Interpolate.NATURAL_SPLINE)
-    bkgControl.setNxSample(int(maskedImage.getWidth() // BackgroundCellSize) + 1)
-    bkgControl.setNySample(int(maskedImage.getHeight() // BackgroundCellSize) + 1)
-    bkgControl.sctrl.setNumSigmaClip(3)
-    bkgControl.sctrl.setNumIter(3)
-
-    image = maskedImage.getImage()
-    bkgObj = afwMath.makeBackground(image, bkgControl)
-    image -= bkgObj.getImageF()
-    if doDisplay:
-        ds9.mtv(image)
-    return bkgObj
-
 if __name__ == "__main__":
     pexLog.Trace.setVerbosity('lsst.coadd', 5)
     helpStr = """Usage: makeCoadd.py coaddPath indata [policy]
@@ -133,11 +111,6 @@ The policy dictionary is: policy/%s
                 print "Create coadd"
                 coadd = coaddChiSq.Coadd(exposure.getMaskedImage().getDimensions(), exposure.getWcs(), policy)
             
-            print "Subtract background"
-            subtractBackground(exposure.getMaskedImage())
-            if SaveDebugImages:
-                exposure.writeFits("bgsub%s" % (fileName,))
-
             print "Warp and add to coadd"
             warpedExposure = coadd.addExposure(exposure)
             if SaveDebugImages:
