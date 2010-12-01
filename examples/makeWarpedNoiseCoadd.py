@@ -66,7 +66,7 @@ where:
 - indata is a file containing a list of:
     pathToExposure
   where:
-  - pathToExposure is the path to an Exposure (without the final _img.fits);
+  - pathToExposure is the path to an Exposure;
     only the WCS and image size are used from the exposure; all other data is ignored.
   - the first exposure listed is taken to be the reference exposure;
     all other images are warped to match its WCS.
@@ -84,13 +84,11 @@ The policy controlling the parameters is %s
         sys.exit(0)
     
     coaddPath = sys.argv[1]
-    if os.path.exists(coaddPath + "_img.fits"):
+    if os.path.exists(coaddPath):
         print "Coadd file %s already exists" % (coaddPath,)
         print helpStr
         sys.exit(1)
-    coaddPath = sys.argv[1]
-    coaddBaseName, coaddExt = os.path.splitext(coaddPath)
-    weightOutName = "%s_weight.fits" % (coaddBaseName,)
+    weightPath = os.splitext(coaddPath)[0] + "_weight.fits"
     
     indata = sys.argv[2]
 
@@ -99,8 +97,8 @@ The policy controlling the parameters is %s
     saveDebugImages = policy.getBool("saveDebugImages")
     imageSigma = policy.getDouble("imageSigma")
     variance = policy.getDouble("variance")
-    warpPolicy = policy.getPolicy("warpPolicy")
-    coaddPolicy = policy.getPolicy("coaddPolicy")
+    warpingKernelName = policy.getPolicy("warpPolicy").get("warpingKernelName")
+    allowedMaskPlanes = policy.getPolicy("coaddPolicy").get("allowedMaskPlanes")
     
     sys.stdout.write("""
 coaddPath  = %s
@@ -112,7 +110,6 @@ saveDebugImages = %s
     numpy.random.seed(0)
 
     # process exposures
-    ImageSuffix = "_img.fits"
     coadd = None
     with file(indata, "rU") as infile:
         for lineNum, line in enumerate(infile):
@@ -121,8 +118,8 @@ saveDebugImages = %s
                 continue
             filePath = line
             fileName = os.path.basename(filePath)
-            if not os.path.isfile(filePath + ImageSuffix):
-                print "Skipping exposure %s; image file %s not found" % (fileName, filePath + ImageSuffix,)
+            if not os.path.isfile(filePath):
+                print "Skipping exposure %s; image file %s not found" % (fileName, filePath,)
                 continue
             
             print "Processing exposure %s" % (filePath,)
@@ -136,15 +133,17 @@ saveDebugImages = %s
             
             if not coadd:
                 print "Create coadd using first exposure as a reference"
-                warp = coaddUtils.Warp(maskedImage.getDimensions(), exposure.getWcs(), warpPolicy)
-                coadd = coaddChiSq.Coadd(maskedImage.getDimensions(), exposure.getWcs(), coaddPolicy)
-                coadd.addExposure(exposure)
+                warper = coaddUtils.Warp(warpingKernelName)
+                coadd = coaddChiSq.Coadd(maskedImage.getDimensions(), exposure.getWcs(), allowedMaskPlanes)
+
                 if saveDebugImages:
-                    warpedExposure = coadd.getReferenceExposure()
-                    warpedExposure.writeFits("warped%s" % (fileName,))
+                    exposure.writeFits("warped%s" % (fileName,))
+
+                print "Add exposure to coadd"
+                coadd.addExposure(exposure)
             else:
                 print "Warp exposure"
-                warpedExposure = warp.warpExposure(exposure)
+                warpedExposure = warper.warpExposure(coadd.getDimensions(), coadd.getWcs(), exposure)
                 
                 print "Add exposure to coadd"
                 coadd.addExposure(warpedExposure)
@@ -154,6 +153,6 @@ saveDebugImages = %s
 
     print "Save resulting coadd and weight map"
     weightMap = coadd.getWeightMap()
-    weightMap.writeFits(weightOutName)
+    weightMap.writeFits(weightPath)
     coaddExposure = coadd.getCoadd()
     coaddExposure.writeFits(coaddPath)

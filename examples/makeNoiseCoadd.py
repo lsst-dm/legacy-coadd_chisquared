@@ -44,6 +44,9 @@ PolicyPath = os.path.join(BaseDir, "MakeNoiseCoaddDictionary.paf")
 def makeNoiseMaskedImage(shape, sigma, variance=1.0):
     """Make a gaussian noise MaskedImageF
     
+    This is painfully slow but afw doesn't support a more direct method
+    and it doesn't seem worth the fuss of coding in C++ in this package
+    
     Inputs:
     - shape: shape of output array (cols, rows)
     - sigma; sigma of image distribution
@@ -73,10 +76,9 @@ The policy controlling the parameters is %s
     if len(sys.argv) != 3:
         print helpStr
         sys.exit(0)
-    
+
     coaddPath = sys.argv[1]
-    coaddBaseName, coaddExt = os.path.splitext(coaddPath)
-    weightOutName = "%s_weight.fits" % (coaddBaseName,)
+    weightPath = os.splitext(coaddPath)[0] + "_weight.fits"
     
     numImages = int(sys.argv[2])
 
@@ -85,7 +87,7 @@ The policy controlling the parameters is %s
     imageShape = policy.getArray("imageShape")
     imageSigma = policy.getDouble("imageSigma")
     variance = policy.getDouble("variance")
-    coaddPolicy = policy.getPolicy("coaddPolicy")
+    allowedMaskPlanes = policy.getPolicy("coaddPolicy").get("allowedMaskPlanes")
     
     sys.stdout.write("""
 coaddPath  = %s
@@ -106,15 +108,15 @@ variance   = %0.1f
         exposure = afwImage.ExposureF(maskedImage, wcs)
         
         if not coadd:
-            print "Create coadd with exposure %d" % (imInd,)
-            coadd = coaddChiSq.Coadd(maskedImage.getDimensions(), exposure.getWcs(), coaddPolicy)
+            print "Create coadd"
+            coadd = coaddChiSq.Coadd(maskedImage.getDimensions(), wcs, allowedMaskPlanes)
 
         print "Add exposure %d to coadd" % (imInd,)
         coadd.addExposure(exposure)
 
-    print "Save weight map as %s" % (weightOutName,)
+    print "Save weight map as %s" % (weightPath,)
     weightMap = coadd.getWeightMap()
-    weightMap.writeFits(weightOutName)
+    weightMap.writeFits(weightPath)
     coaddExposure = coadd.getCoadd()
     print "Save coadd as %s" % (coaddPath,)
     coaddExposure.writeFits(coaddPath)

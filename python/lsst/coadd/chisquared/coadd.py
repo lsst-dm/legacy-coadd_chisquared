@@ -33,18 +33,19 @@ import chisquaredLib
 __all__ = ["Coadd"]
 
 class Coadd(coaddUtils.Coadd):
-    def __init__(self, dimensions, wcs, policy):
+    def __init__(self, dimensions, wcs, allowedMaskPlanes):
         """Create a chi-squared coadd
         
         Inputs:
         - dimensions: dimensions of coadd
         - wcs: WCS of coadd
-        - policy: see policy/chiSquaredCoadd_dict.paf
+        - allowedMaskPlanes: mask planes to allow (ignore) when rejecting masked pixels.
+            Specify as a single string containing space-separated names
         """
         coaddUtils.Coadd.__init__(self,
             dimensions = dimensions,
             wcs = wcs,
-            policy = policy,
+            allowedMaskPlanes = allowedMaskPlanes,
             logName = "coadd.chisquared.Coadd",
         )
 
