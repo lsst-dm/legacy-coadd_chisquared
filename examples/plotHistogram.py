@@ -52,7 +52,6 @@ def clipOutliers(arr):
     maxGood = median + threeSigma
     return numpy.extract((arr >= minGood) & (arr <= maxGood), arr)
 
-
 def plotHistogram(coaddName, weightMapName):
     """Plot a histogram given paths to the coadd and weight map
     """
@@ -61,6 +60,8 @@ def plotHistogram(coaddName, weightMapName):
     weightMapData = weightMap[0].data
     chiSqOrder = weightMapData.max()
     coaddData = coadd[0].data
+    if coaddData == None: # handle MEF
+        coaddData = coadd[1].data
     if coaddData.shape != weightMapData.shape:
         raise RuntimeError("Image shape = %s != %s = weight map shape" % \
             (coaddData.shape, weightMapData.shape))
@@ -154,7 +155,7 @@ def plotHistogram(coaddName, weightMapName):
     pyplot.show()
 
 if __name__ == "__main__":
-    helpStr = """Usage: plotHistogram.py coaddfile chiSqOrder
+    helpStr = """Usage: plotHistogram.py coaddfile
 
 where:
 - coaddfile is the path of the coadd image

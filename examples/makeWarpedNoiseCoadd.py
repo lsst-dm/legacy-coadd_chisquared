@@ -88,7 +88,7 @@ The policy controlling the parameters is %s
         print "Coadd file %s already exists" % (coaddPath,)
         print helpStr
         sys.exit(1)
-    weightPath = os.splitext(coaddPath)[0] + "_weight.fits"
+    weightPath = os.path.splitext(coaddPath)[0] + "_weight.fits"
     
     indata = sys.argv[2]
 
@@ -118,12 +118,13 @@ saveDebugImages = %s
                 continue
             filePath = line
             fileName = os.path.basename(filePath)
-            if not os.path.isfile(filePath):
-                print "Skipping exposure %s; image file %s not found" % (fileName, filePath,)
-                continue
             
             print "Processing exposure %s" % (filePath,)
-            inputExposure = afwImage.ExposureF(filePath)
+            try:
+                inputExposure = afwImage.ExposureF(filePath)
+            except Exception, e:
+                print "Skipping %s: %s" % (filePath, e)
+                continue
             imageShape = tuple(inputExposure.getMaskedImage().getDimensions())
             wcs = inputExposure.getWcs()
 

@@ -73,7 +73,7 @@ The policy dictionary is: policy/%s
         print "Coadd file %r already exists" % (coaddPath,)
         print helpStr
         sys.exit(1)
-    weightPath = os.splitext(coaddPath)[0] + "_weight.fits"
+    weightPath = os.path.splitext(coaddPath)[0] + "_weight.fits"
     
     indata = sys.argv[2]
     
@@ -98,12 +98,13 @@ The policy dictionary is: policy/%s
                 continue
             filePath = line
             fileName = os.path.basename(filePath)
-            if not os.path.isfile(filePath):
-                print "Skipping exposure %s; file %r not found" % (fileName, filePath)
-                continue
-            
+
             print "Processing exposure %s" % (filePath,)
-            exposure = afwImage.ExposureF(filePath)
+            try:
+                exposure = afwImage.ExposureF(filePath)
+            except Exception, e:
+                print "Skipping %s: %s" % (filePath, e)
+                continue
             
             if not coadd:
                 print "First exposure is the reference; create warper and coadd"

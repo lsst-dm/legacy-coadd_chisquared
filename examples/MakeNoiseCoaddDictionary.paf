@@ -28,7 +28,7 @@ definitions: {
     coaddPolicy: {
         description: "Policy to control coadd."
         type: "policy"
-        dictionary: @@coadd_utils:policy/coadd_dict.paf
+        dictionary: @@coadd_utils:policy/CoaddDictionary.paf
         minOccurs: 1
         maxOccurs: 1
     }

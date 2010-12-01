@@ -49,6 +49,8 @@ where:
     
 image = pyfits.open(imagePath)
 imageData = image[0].data
+if imageData == None: # handle MEF
+    imageData = image[1].data
 # get rid of nans and take square root
 goodData = numpy.ma.array(imageData.flat, mask=numpy.isnan(imageData.flat)).compressed()
 hist, binEdges = numpy.histogram(goodData, bins=NBins)

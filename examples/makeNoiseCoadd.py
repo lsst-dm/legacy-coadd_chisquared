@@ -78,7 +78,7 @@ The policy controlling the parameters is %s
         sys.exit(0)
 
     coaddPath = sys.argv[1]
-    weightPath = os.splitext(coaddPath)[0] + "_weight.fits"
+    weightPath = os.path.splitext(coaddPath)[0] + "_weight.fits"
     
     numImages = int(sys.argv[2])
 
