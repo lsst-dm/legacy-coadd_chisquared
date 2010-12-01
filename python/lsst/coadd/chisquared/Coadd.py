@@ -48,14 +48,13 @@ class Coadd(coaddUtils.Coadd):
             logName = "coadd.chisquared.Coadd",
         )
 
-    def _basicAddExposure(self, warpedExposure, weightFactor=1.0):
+    def addExposure(self, exposure, weightFactor=1.0):
         """Add a an exposure to the coadd; it is assumed to have the same WCS as the coadd
 
         Inputs:
-        - warpedExposure: Exposure to add to coadd; must have the background subtracted
-            and have been warped to match the WCS of the coadd.
+        - exposure: Exposure to add to coadd; must be background-subtracted and warped to match the coadd.
         - weight: weight of good pixels for the weight map
         """
-        self._log.log(pexLog.Log.INFO, "add masked image to coadd")
+        self._log.log(pexLog.Log.INFO, "add exposure to coadd")
         chisquaredLib.addToCoadd(self._coadd.getMaskedImage(), self._weightMap,
-            warpedExposure.getMaskedImage(), self._badPixelMask, weightFactor)
+            exposure.getMaskedImage(), self._badPixelMask, weightFactor)

@@ -47,12 +47,12 @@ SaveDebugImages = False
 
 BackgroundCellSize = 512
 
-PackageName = "coadd_chisquared"
-PolicyDictName = "chiSquaredCoadd_dict.paf"
+PolicyPackageName = "coadd_utils"
+PolicyDictName = "WarpAndCoaddDictionary.paf"
 
 if __name__ == "__main__":
     pexLog.Trace.setVerbosity('lsst.coadd', 5)
-    helpStr = """Usage: makeCoadd.py coaddPath indata [policy]
+    helpStr = """Usage: warpAndCoadd.py coaddPath indata [policy]
 
 where:
 - coaddPath is the desired name or path of the output coadd
@@ -86,12 +86,15 @@ The policy dictionary is: policy/%s
     else:
         policy = pexPolicy.Policy()
 
-    policyFile = pexPolicy.DefaultPolicyFile(PackageName, PolicyDictName, "policy")
+    policyFile = pexPolicy.DefaultPolicyFile(PolicyPackageName, PolicyDictName, "policy")
     defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
     policy.mergeDefaults(defPolicy.getDictionary())
+    warpPolicy = policy.getPolicy("warpPolicy")
+    coaddPolicy = policy.getPolicy("coaddPolicy")
 
     # process exposures
     ImageSuffix = "_img.fits"
+    warp = None
     coadd = None
     with file(indata, "rU") as infile:
         for lineNum, line in enumerate(infile):
@@ -109,12 +112,16 @@ The policy dictionary is: policy/%s
             
             if not coadd:
                 print "Create coadd"
-                coadd = coaddChiSq.Coadd(exposure.getMaskedImage().getDimensions(), exposure.getWcs(), policy)
+                warp = coaddUtils.Warp(exposure.getMaskedImage().getDimensions(), exposure.getWcs(), warpPolicy)
+                coadd = coaddChiSq.Coadd(exposure.getMaskedImage().getDimensions(), exposure.getWcs(), coaddPolicy)
             
-            print "Warp and add to coadd"
-            warpedExposure = coadd.addExposure(exposure)
+            print "Warp exposure"
+            warpedExposure = warp.warpExposure(exposure)
             if SaveDebugImages:
                 warpedExposure.writeFits("warped%s" % (fileName,))
+            
+            print "Add warped exposure to coadd"
+            warpedExposure = coadd.addExposure(warpedExposure)
 
     weightMap = coadd.getWeightMap()
     weightMap.writeFits(weightOutName)

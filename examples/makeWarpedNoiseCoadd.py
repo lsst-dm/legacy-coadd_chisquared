@@ -37,9 +37,10 @@ import lsst.pex.policy as pexPolicy
 import lsst.afw.image as afwImage
 import lsst.afw.image.testUtils as imTestUtils
 import lsst.coadd.chisquared as coaddChiSq
+import lsst.coadd.utils as coaddUtils
 
 BaseDir = os.path.dirname(__file__)
-PolicyPath = os.path.join(BaseDir, "makeWarpedNoiseCoadd_policy.paf")
+PolicyPath = os.path.join(BaseDir, "MakeWarpedNoiseCoaddDictionary.paf")
 
 def makeNoiseMaskedImage(shape, sigma, variance=1.0):
     """Make a gaussian noise MaskedImageF
@@ -98,6 +99,8 @@ The policy controlling the parameters is %s
     saveDebugImages = policy.getBool("saveDebugImages")
     imageSigma = policy.getDouble("imageSigma")
     variance = policy.getDouble("variance")
+    warpPolicy = policy.getPolicy("warpPolicy")
+    coaddPolicy = policy.getPolicy("coaddPolicy")
     
     sys.stdout.write("""
 coaddPath  = %s
@@ -126,19 +129,26 @@ saveDebugImages = %s
             inputExposure = afwImage.ExposureF(filePath)
             imageShape = tuple(inputExposure.getMaskedImage().getDimensions())
             wcs = inputExposure.getWcs()
+
             print "Create Gaussian noise exposure"
             maskedImage = makeNoiseMaskedImage(shape=imageShape, sigma=imageSigma, variance=variance)
             exposure = afwImage.ExposureF(maskedImage, wcs)
             
             if not coadd:
-                print "Create coadd using this exposure as a reference"
-                coadd = coaddChiSq.Coadd(exposure, policy)
+                print "Create coadd using first exposure as a reference"
+                warp = coaddUtils.Warp(maskedImage.getDimensions(), exposure.getWcs(), warpPolicy)
+                coadd = coaddChiSq.Coadd(maskedImage.getDimensions(), exposure.getWcs(), coaddPolicy)
+                coadd.addExposure(exposure)
                 if saveDebugImages:
-                    warpedExposure = coadd.getWarpedReferenceExposure()
+                    warpedExposure = coadd.getReferenceExposure()
                     warpedExposure.writeFits("warped%s" % (fileName,))
             else:
-                print "Warp and add this exposure to the coadd"
-                warpedExposure = coadd.addExposure(exposure)
+                print "Warp exposure"
+                warpedExposure = warp.warpExposure(exposure)
+                
+                print "Add exposure to coadd"
+                coadd.addExposure(warpedExposure)
+                
                 if saveDebugImages:
                     warpedExposure.writeFits("warped%s" % (fileName,))
 

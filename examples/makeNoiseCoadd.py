@@ -39,7 +39,7 @@ import lsst.afw.image.testUtils as imTestUtils
 import lsst.coadd.chisquared as coaddChiSq
 
 BaseDir = os.path.dirname(__file__)
-PolicyPath = os.path.join(BaseDir, "makeNoiseCoadd_policy.paf")
+PolicyPath = os.path.join(BaseDir, "MakeNoiseCoaddDictionary.paf")
 
 def makeNoiseMaskedImage(shape, sigma, variance=1.0):
     """Make a gaussian noise MaskedImageF
@@ -82,12 +82,10 @@ The policy controlling the parameters is %s
 
     policy = pexPolicy.Policy.createPolicy(PolicyPath)
 
-    saveDebugImages = policy.getBool("saveDebugImages")
-    imageShape = (256, 256)
     imageShape = policy.getArray("imageShape")
-    print "imageShape=%r" % (imageShape,)
     imageSigma = policy.getDouble("imageSigma")
     variance = policy.getDouble("variance")
+    coaddPolicy = policy.getPolicy("coaddPolicy")
     
     sys.stdout.write("""
 coaddPath  = %s
@@ -95,8 +93,7 @@ numImages  = %d
 imageShape = %s
 imageSigma = %0.1f
 variance   = %0.1f
-saveDebugImages = %s
-""" % (coaddPath, numImages, imageShape, imageSigma, variance, saveDebugImages))
+""" % (coaddPath, numImages, imageShape, imageSigma, variance))
     
     numpy.random.seed(0)
     
@@ -104,22 +101,16 @@ saveDebugImages = %s
     for imInd in range(numImages):
         print "Create exposure %d" % (imInd,)
         maskedImage = makeNoiseMaskedImage(shape=imageShape, sigma=imageSigma, variance=variance)
+        # the WCS doesn't matter; the default will do
         wcs = afwImage.Wcs()
         exposure = afwImage.ExposureF(maskedImage, wcs)
         
         if not coadd:
             print "Create coadd with exposure %d" % (imInd,)
-            coadd = coaddChiSq.Coadd(exposure.getMaskedImage().getDimensions(), exposure.getWcs(), policy)
+            coadd = coaddChiSq.Coadd(maskedImage.getDimensions(), exposure.getWcs(), coaddPolicy)
 
         print "Add exposure %d to coadd" % (imInd,)
-        # note that the these noise images are not usually warped, in which case
-        # the warped exposure will be the same as the original exposure
-        warpedExposure = coadd.addExposure(exposure)
-
-        if saveDebugImages:
-            expName = "%d_%s" % (imInd, coaddPath)
-            print "Save intermediate exposure %s" % (expName,)
-            warpedExposure.writeFits(expName)
+        coadd.addExposure(exposure)
 
     print "Save weight map as %s" % (weightOutName,)
     weightMap = coadd.getWeightMap()
