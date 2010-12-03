@@ -112,7 +112,11 @@ class CoaddTestCase(unittest.TestCase):
             exposure = afwImage.ExposureF(maskedImage, wcs)
             
             if not coadd:
-                coadd = coaddChiSq.Coadd(maskedImage.getDimensions(), exposure.getWcs(), allowedMaskPlanes)
+                coadd = coaddChiSq.Coadd(
+                    dimensions = maskedImage.getDimensions(),
+                    xy0 = exposure.getXY0(),
+                    wcs = exposure.getWcs(),
+                    allowedMaskPlanes = allowedMaskPlanes)
     
             coadd.addExposure(exposure)
     
