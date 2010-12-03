@@ -39,10 +39,13 @@ import lsst.afw.image.testUtils as imTestUtils
 import lsst.coadd.chisquared as coaddChiSq
 
 BaseDir = os.path.dirname(__file__)
-PolicyPath = os.path.join(BaseDir, "makeNoiseCoadd_policy.paf")
+PolicyPath = os.path.join(BaseDir, "MakeNoiseCoaddDictionary.paf")
 
 def makeNoiseMaskedImage(shape, sigma, variance=1.0):
     """Make a gaussian noise MaskedImageF
+    
+    This is painfully slow but afw doesn't support a more direct method
+    and it doesn't seem worth the fuss of coding in C++ in this package
     
     Inputs:
     - shape: shape of output array (cols, rows)
@@ -73,21 +76,18 @@ The policy controlling the parameters is %s
     if len(sys.argv) != 3:
         print helpStr
         sys.exit(0)
-    
+
     coaddPath = sys.argv[1]
-    coaddBaseName, coaddExt = os.path.splitext(coaddPath)
-    weightOutName = "%s_weight.fits" % (coaddBaseName,)
+    weightPath = os.path.splitext(coaddPath)[0] + "_weight.fits"
     
     numImages = int(sys.argv[2])
 
     policy = pexPolicy.Policy.createPolicy(PolicyPath)
 
-    saveDebugImages = policy.getBool("saveDebugImages")
-    imageShape = (256, 256)
     imageShape = policy.getArray("imageShape")
-    print "imageShape=%r" % (imageShape,)
     imageSigma = policy.getDouble("imageSigma")
     variance = policy.getDouble("variance")
+    allowedMaskPlanes = policy.getPolicy("coaddPolicy").get("allowedMaskPlanes")
     
     sys.stdout.write("""
 coaddPath  = %s
@@ -95,8 +95,7 @@ numImages  = %d
 imageShape = %s
 imageSigma = %0.1f
 variance   = %0.1f
-saveDebugImages = %s
-""" % (coaddPath, numImages, imageShape, imageSigma, variance, saveDebugImages))
+""" % (coaddPath, numImages, imageShape, imageSigma, variance))
     
     numpy.random.seed(0)
     
@@ -104,26 +103,23 @@ saveDebugImages = %s
     for imInd in range(numImages):
         print "Create exposure %d" % (imInd,)
         maskedImage = makeNoiseMaskedImage(shape=imageShape, sigma=imageSigma, variance=variance)
+        # the WCS doesn't matter; the default will do
         wcs = afwImage.Wcs()
         exposure = afwImage.ExposureF(maskedImage, wcs)
         
         if not coadd:
-            print "Create coadd with exposure %d" % (imInd,)
-            coadd = coaddChiSq.Coadd(exposure.getMaskedImage().getDimensions(), exposure.getWcs(), policy)
+            print "Create coadd"
+            coadd = coaddChiSq.Coadd(
+                dimensions = maskedImage.getDimensions(),
+                xy0 = exposure.getXY0(),
+                wcs = exposure.getWcs(),
+                allowedMaskPlanes = allowedMaskPlanes)
 
-        print "Add exposure %d to coadd" % (imInd,)
-        # note that the these noise images are not usually warped, in which case
-        # the warped exposure will be the same as the original exposure
-        warpedExposure = coadd.addExposure(exposure)
+        coadd.addExposure(exposure)
 
-        if saveDebugImages:
-            expName = "%d_%s" % (imInd, coaddPath)
-            print "Save intermediate exposure %s" % (expName,)
-            warpedExposure.writeFits(expName)
-
-    print "Save weight map as %s" % (weightOutName,)
+    print "Save weight map as %s" % (weightPath,)
     weightMap = coadd.getWeightMap()
-    weightMap.writeFits(weightOutName)
+    weightMap.writeFits(weightPath)
     coaddExposure = coadd.getCoadd()
     print "Save coadd as %s" % (coaddPath,)
     coaddExposure.writeFits(coaddPath)

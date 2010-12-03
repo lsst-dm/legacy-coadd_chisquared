@@ -21,4 +21,4 @@
 #
 
 from chisquaredLib import *
-from Coadd import *
+from coadd import *

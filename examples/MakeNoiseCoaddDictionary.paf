@@ -1,0 +1,35 @@
+#<?cfg paf dictionary ?>
+
+definitions: {
+    imageShape: {
+        type: int
+        description: "Constant value of variance pixels"
+        minOccurs: 2
+        maxOccurs: 2
+        default: 256 256
+    }
+
+    imageSigma: {
+        type: double
+        description: "Sigma of Gaussian noise for image pixels"
+        minOccurs: 1
+        maxOccurs: 1
+        default: 1.0
+    }
+
+    variance: {
+        type: double
+        description: "Constant value of variance pixels"
+        minOccurs: 1
+        maxOccurs: 1
+        default: 1.0
+    }
+
+    coaddPolicy: {
+        description: "Policy to control coadd."
+        type: "policy"
+        dictionary: @@coadd_utils:policy/CoaddDictionary.paf
+        minOccurs: 1
+        maxOccurs: 1
+    }
+}

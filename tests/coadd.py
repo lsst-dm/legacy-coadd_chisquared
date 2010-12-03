@@ -101,9 +101,7 @@ class CoaddTestCase(unittest.TestCase):
         maxStdDevErr = 0.2
         maxMeanErr = 1.0e-12
         
-        policy = pexPolicy.Policy()
-        policy.set("allowedMaskPlanes", "") # we don't set bad bits
-        policy.set("doWarpExposures", False)
+        allowedMaskPlanes = "" # we don't set bad bits
     
         numpy.random.seed(0)
         
@@ -114,7 +112,11 @@ class CoaddTestCase(unittest.TestCase):
             exposure = afwImage.ExposureF(maskedImage, wcs)
             
             if not coadd:
-                coadd = coaddChiSq.Coadd(exposure.getMaskedImage().getDimensions(), exposure.getWcs(), policy)
+                coadd = coaddChiSq.Coadd(
+                    dimensions = maskedImage.getDimensions(),
+                    xy0 = exposure.getXY0(),
+                    wcs = exposure.getWcs(),
+                    allowedMaskPlanes = allowedMaskPlanes)
     
             coadd.addExposure(exposure)
     
