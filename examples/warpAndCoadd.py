@@ -86,7 +86,7 @@ The policy dictionary is: policy/%s
     policyFile = pexPolicy.DefaultPolicyFile(PolicyPackageName, PolicyDictName, "policy")
     defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
     policy.mergeDefaults(defPolicy.getDictionary())
-    warpingKernelName = policy.getPolicy("warpPolicy").get("warpingKernelName")
+    warpPolicy = policy.getPolicy("warpPolicy")
     allowedMaskPlanes = policy.getPolicy("coaddPolicy").get("allowedMaskPlanes")
 
     # process exposures
@@ -107,20 +107,25 @@ The policy dictionary is: policy/%s
                 continue
             
             if not coadd:
-                print "First exposure is the reference; create warper and coadd"
+                print "Create warper and coadd with size and WCS matching the first exposure"
                 maskedImage = exposure.getMaskedImage()
-                warper = coaddUtils.Warp(warpingKernelName)
-                coadd = coaddChiSq.Coadd(maskedImage.getDimensions(), exposure.getWcs(), allowedMaskPlanes)
+                warper = coaddUtils.Warp.fromPolicy(warpPolicy)
+                coadd = coaddChiSq.Coadd(
+                    dimensions = maskedImage.getDimensions(),
+                    xy0 = exposure.getXY0(),
+                    wcs = exposure.getWcs(),
+                    allowedMaskPlanes = allowedMaskPlanes)
             
-                print "Add reference exposure to coadd (without warping)"
                 coadd.addExposure(exposure)
             else:
-                print "Warp exposure"
-                warpedExposure = warper.warpExposure(coadd.getDimensions(), coadd.getWcs(), exposure)
+                warpedExposure = warper.warpExposure(
+                    dimensions = coadd.getDimensions(),
+                    xy0 = coadd.getXY0(),
+                    wcs = coadd.getWcs(),
+                    exposure = exposure)
                 if SaveDebugImages:
                     warpedExposure.writeFits("warped%s" % (fileName,))
                     
-                print "Add warped exposure to coadd"
                 coadd.addExposure(warpedExposure)
 
     weightMap = coadd.getWeightMap()

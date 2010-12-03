@@ -109,9 +109,12 @@ variance   = %0.1f
         
         if not coadd:
             print "Create coadd"
-            coadd = coaddChiSq.Coadd(maskedImage.getDimensions(), wcs, allowedMaskPlanes)
+            coadd = coaddChiSq.Coadd(
+                dimensions = maskedImage.getDimensions(),
+                xy0 = exposure.getXY0(),
+                wcs = exposure.getWcs(),
+                allowedMaskPlanes = allowedMaskPlanes)
 
-        print "Add exposure %d to coadd" % (imInd,)
         coadd.addExposure(exposure)
 
     print "Save weight map as %s" % (weightPath,)

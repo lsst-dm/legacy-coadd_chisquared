@@ -19,31 +19,26 @@
 # the GNU General Public License along with this program.  If not, 
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
-
-"""chi-squared coadd
-"""
-import sys
 import lsst.pex.logging as pexLog
-import lsst.afw.image as afwImage
-import lsst.afw.math as afwMath
-import lsst.afw.detection as afwDetect
 import lsst.coadd.utils as coaddUtils
 import chisquaredLib
 
 __all__ = ["Coadd"]
 
 class Coadd(coaddUtils.Coadd):
-    def __init__(self, dimensions, wcs, allowedMaskPlanes):
+    def __init__(self, dimensions, xy0, wcs, allowedMaskPlanes):
         """Create a chi-squared coadd
         
         Inputs:
         - dimensions: dimensions of coadd
+        - xy0: xy0 of coadd
         - wcs: WCS of coadd
         - allowedMaskPlanes: mask planes to allow (ignore) when rejecting masked pixels.
             Specify as a single string containing space-separated names
         """
         coaddUtils.Coadd.__init__(self,
             dimensions = dimensions,
+            xy0 = xy0,
             wcs = wcs,
             allowedMaskPlanes = allowedMaskPlanes,
             logName = "coadd.chisquared.Coadd",

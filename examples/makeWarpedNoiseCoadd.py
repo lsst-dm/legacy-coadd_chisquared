@@ -97,7 +97,7 @@ The policy controlling the parameters is %s
     saveDebugImages = policy.getBool("saveDebugImages")
     imageSigma = policy.getDouble("imageSigma")
     variance = policy.getDouble("variance")
-    warpingKernelName = policy.getPolicy("warpPolicy").get("warpingKernelName")
+    warpPolicy = policy.getPolicy("warpPolicy")
     allowedMaskPlanes = policy.getPolicy("coaddPolicy").get("allowedMaskPlanes")
     
     sys.stdout.write("""
@@ -133,20 +133,25 @@ saveDebugImages = %s
             exposure = afwImage.ExposureF(maskedImage, wcs)
             
             if not coadd:
-                print "Create coadd using first exposure as a reference"
-                warper = coaddUtils.Warp(warpingKernelName)
-                coadd = coaddChiSq.Coadd(maskedImage.getDimensions(), exposure.getWcs(), allowedMaskPlanes)
+                print "Create warper and coadd with size and WCS matching the first exposure"
+                warper = coaddUtils.Warp.fromPolicy(warpPolicy)
+                coadd = coaddChiSq.Coadd(
+                    dimensions = maskedImage.getDimensions(),
+                    xy0 = exposure.getXY0(),
+                    wcs = exposure.getWcs(),
+                    allowedMaskPlanes = allowedMaskPlanes)
 
                 if saveDebugImages:
                     exposure.writeFits("warped%s" % (fileName,))
 
-                print "Add exposure to coadd"
                 coadd.addExposure(exposure)
             else:
-                print "Warp exposure"
-                warpedExposure = warper.warpExposure(coadd.getDimensions(), coadd.getWcs(), exposure)
+                warpedExposure = warper.warpExposure(
+                    dimensions = coadd.getDimensions(),
+                    xy0 = coadd.getXY0(),
+                    wcs = coadd.getWcs(),
+                    exposure = exposure)
                 
-                print "Add exposure to coadd"
                 coadd.addExposure(warpedExposure)
                 
                 if saveDebugImages:
