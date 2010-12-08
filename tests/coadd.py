@@ -36,6 +36,7 @@ import lsst.utils.tests as utilsTests
 import lsst.pex.policy as pexPolicy
 import lsst.afw.image as afwImage
 import lsst.afw.image.testUtils as imTestUtils
+import lsst.coadd.utils as coaddUtils
 import lsst.coadd.chisquared as coaddChiSq
 
 doPlot = False
@@ -113,8 +114,7 @@ class CoaddTestCase(unittest.TestCase):
             
             if not coadd:
                 coadd = coaddChiSq.Coadd(
-                    dimensions = maskedImage.getDimensions(),
-                    xy0 = exposure.getXY0(),
+                    bbox = coaddUtils.bboxFromImage(exposure),
                     wcs = exposure.getWcs(),
                     allowedMaskPlanes = allowedMaskPlanes)
     

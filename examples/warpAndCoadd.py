@@ -111,16 +111,14 @@ The policy dictionary is: policy/%s
                 maskedImage = exposure.getMaskedImage()
                 warper = coaddUtils.Warp.fromPolicy(warpPolicy)
                 coadd = coaddChiSq.Coadd(
-                    dimensions = maskedImage.getDimensions(),
-                    xy0 = exposure.getXY0(),
+                    bbox = coaddUtils.bboxFromImage(exposure),
                     wcs = exposure.getWcs(),
                     allowedMaskPlanes = allowedMaskPlanes)
             
                 coadd.addExposure(exposure)
             else:
                 warpedExposure = warper.warpExposure(
-                    dimensions = coadd.getDimensions(),
-                    xy0 = coadd.getXY0(),
+                    bbox = coadd.getBBox(),
                     wcs = coadd.getWcs(),
                     exposure = exposure)
                 if SaveDebugImages:

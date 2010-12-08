@@ -136,8 +136,7 @@ saveDebugImages = %s
                 print "Create warper and coadd with size and WCS matching the first exposure"
                 warper = coaddUtils.Warp.fromPolicy(warpPolicy)
                 coadd = coaddChiSq.Coadd(
-                    dimensions = maskedImage.getDimensions(),
-                    xy0 = exposure.getXY0(),
+                    bbox = coaddUtils.bboxFromImage(exposure),
                     wcs = exposure.getWcs(),
                     allowedMaskPlanes = allowedMaskPlanes)
 
@@ -147,8 +146,7 @@ saveDebugImages = %s
                 coadd.addExposure(exposure)
             else:
                 warpedExposure = warper.warpExposure(
-                    dimensions = coadd.getDimensions(),
-                    xy0 = coadd.getXY0(),
+                    bbox = coadd.getBBox(),
                     wcs = coadd.getWcs(),
                     exposure = exposure)
                 
