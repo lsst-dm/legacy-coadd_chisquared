@@ -26,19 +26,18 @@ import chisquaredLib
 __all__ = ["Coadd"]
 
 class Coadd(coaddUtils.Coadd):
-    def __init__(self, dimensions, xy0, wcs, allowedMaskPlanes):
+    def __init__(self, bbox, wcs, allowedMaskPlanes):
         """Create a chi-squared coadd
         
         Inputs:
-        - dimensions: dimensions of coadd
-        - xy0: xy0 of coadd
-        - wcs: WCS of coadd
+        - bbox: bounding box of coadd Exposure with respect to parent (lsst.afw.geom.BoxI):
+            coadd dimensions = bbox.getDimensions(); xy0 = bbox.getMin()
+        - wcs: WCS of coadd exposure (lsst.afw.math.Wcs)
         - allowedMaskPlanes: mask planes to allow (ignore) when rejecting masked pixels.
             Specify as a single string containing space-separated names
         """
         coaddUtils.Coadd.__init__(self,
-            dimensions = dimensions,
-            xy0 = xy0,
+            bbox = bbox,
             wcs = wcs,
             allowedMaskPlanes = allowedMaskPlanes,
             logName = "coadd.chisquared.Coadd",

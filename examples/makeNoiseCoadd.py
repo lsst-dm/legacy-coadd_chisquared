@@ -36,6 +36,7 @@ import lsst.pex.logging as pexLog
 import lsst.pex.policy as pexPolicy
 import lsst.afw.image as afwImage
 import lsst.afw.image.testUtils as imTestUtils
+import lsst.coadd.utils as coaddUtils
 import lsst.coadd.chisquared as coaddChiSq
 
 BaseDir = os.path.dirname(__file__)
@@ -110,8 +111,7 @@ variance   = %0.1f
         if not coadd:
             print "Create coadd"
             coadd = coaddChiSq.Coadd(
-                dimensions = maskedImage.getDimensions(),
-                xy0 = exposure.getXY0(),
+                bbox = coaddUtils.bboxFromImage(exposure),
                 wcs = exposure.getWcs(),
                 allowedMaskPlanes = allowedMaskPlanes)
 
