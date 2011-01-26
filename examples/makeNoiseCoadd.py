@@ -88,9 +88,9 @@ The policy controlling the parameters is %s
     imageShape = policy.getArray("imageShape")
     imageSigma = policy.getDouble("imageSigma")
     variance = policy.getDouble("variance")
-    allowedMaskPlanes = policy.getPolicy("coaddPolicy").get("allowedMaskPlanes")
+    coaddPolicy = policy.getPolicy("coaddPolicy")
     
-    sys.stdout.write("""
+    sys.stderr.write("""
 coaddPath  = %s
 numImages  = %d
 imageShape = %s
@@ -102,24 +102,25 @@ variance   = %0.1f
     
     coadd = None
     for imInd in range(numImages):
-        print "Create exposure %d" % (imInd,)
+        print >> sys.stderr, "Create exposure %d" % (imInd,)
         maskedImage = makeNoiseMaskedImage(shape=imageShape, sigma=imageSigma, variance=variance)
         # the WCS doesn't matter; the default will do
         wcs = afwImage.Wcs()
         exposure = afwImage.ExposureF(maskedImage, wcs)
         
         if not coadd:
-            print "Create coadd"
-            coadd = coaddChiSq.Coadd(
+            print >> sys.stderr, "Create coadd"
+            coadd = coaddChiSq.Coadd.fromPolicy(
                 bbox = coaddUtils.bboxFromImage(exposure),
                 wcs = exposure.getWcs(),
-                allowedMaskPlanes = allowedMaskPlanes)
+                policy = coaddPolicy)
+            print >> sys.stderr, "badPixelMask=", coadd.getBadPixelMask()
 
         coadd.addExposure(exposure)
 
-    print "Save weight map as %s" % (weightPath,)
+    print >> sys.stderr, "Save weight map as %s" % (weightPath,)
     weightMap = coadd.getWeightMap()
     weightMap.writeFits(weightPath)
     coaddExposure = coadd.getCoadd()
-    print "Save coadd as %s" % (coaddPath,)
+    print >> sys.stderr, "Save coadd as %s" % (coaddPath,)
     coaddExposure.writeFits(coaddPath)

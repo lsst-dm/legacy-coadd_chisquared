@@ -26,22 +26,36 @@ import chisquaredLib
 __all__ = ["Coadd"]
 
 class Coadd(coaddUtils.Coadd):
-    def __init__(self, bbox, wcs, allowedMaskPlanes):
+    def __init__(self, bbox, wcs, badMaskPlanes):
         """Create a chi-squared coadd
         
         Inputs:
         - bbox: bounding box of coadd Exposure with respect to parent (lsst.afw.geom.BoxI):
             coadd dimensions = bbox.getDimensions(); xy0 = bbox.getMin()
         - wcs: WCS of coadd exposure (lsst.afw.math.Wcs)
-        - allowedMaskPlanes: mask planes to allow (ignore) when rejecting masked pixels.
-            Specify as a single string containing space-separated names
+        - badMaskPlanes: mask planes to pay attention to when rejecting masked pixels.
+            Specify as a collection of names.
+            badMaskPlanes should always include "EDGE".
         """
         coaddUtils.Coadd.__init__(self,
             bbox = bbox,
             wcs = wcs,
-            allowedMaskPlanes = allowedMaskPlanes,
+            badMaskPlanes = badMaskPlanes,
             logName = "coadd.chisquared.Coadd",
         )
+    
+    @classmethod
+    def fromPolicy(cls, bbox, wcs, policy):
+        """Create a coadd
+        
+        Inputs:
+        - bbox: bounding box of coadd Exposure with respect to parent (lsst.afw.geom.BoxI):
+            coadd dimensions = bbox.getDimensions(); xy0 = bbox.getMin()
+        - wcs: WCS of coadd exposure (lsst.afw.math.Wcs)
+        - policy: coadd policy; see policy/CoaddPolicyDictionary.paf
+        """
+        badMaskPlanes = policy.getArray("badMaskPlanes")
+        return cls(bbox, wcs, badMaskPlanes)
 
     def addExposure(self, exposure, weightFactor=1.0):
         """Add a an exposure to the coadd; it is assumed to have the same WCS as the coadd

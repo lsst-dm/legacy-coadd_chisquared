@@ -85,8 +85,7 @@ The policy controlling the parameters is %s
     
     coaddPath = sys.argv[1]
     if os.path.exists(coaddPath):
-        print "Coadd file %s already exists" % (coaddPath,)
-        print helpStr
+        print >> sys.stderr, "Coadd file %s already exists" % (coaddPath,)
         sys.exit(1)
     weightPath = os.path.splitext(coaddPath)[0] + "_weight.fits"
     
@@ -98,9 +97,9 @@ The policy controlling the parameters is %s
     imageSigma = policy.getDouble("imageSigma")
     variance = policy.getDouble("variance")
     warpPolicy = policy.getPolicy("warpPolicy")
-    allowedMaskPlanes = policy.getPolicy("coaddPolicy").get("allowedMaskPlanes")
+    coaddPolicy = policy.getPolicy("coaddPolicy")
     
-    sys.stdout.write("""
+    sys.stderr.write("""
 coaddPath  = %s
 imageSigma = %0.1f
 variance   = %0.1f
@@ -111,51 +110,60 @@ saveDebugImages = %s
 
     # process exposures
     coadd = None
+    numExposuresInCoadd = 0
+    numExposuresFailed = 0
+    expNum = 0
     with file(indata, "rU") as infile:
         for lineNum, line in enumerate(infile):
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
             filePath = line
-            fileName = os.path.basename(filePath)
+            expNum += 1
             
-            print "Processing exposure %s" % (filePath,)
             try:
+                print >> sys.stderr, "Processing exposure %s" % (filePath,)
                 inputExposure = afwImage.ExposureF(filePath)
+                imageShape = tuple(inputExposure.getMaskedImage().getDimensions())
+                wcs = inputExposure.getWcs()
+    
+                print >> sys.stderr, "Create Gaussian noise exposure"
+                maskedImage = makeNoiseMaskedImage(shape=imageShape, sigma=imageSigma, variance=variance)
+                exposure = afwImage.ExposureF(maskedImage, wcs)
+
+                if saveDebugImages:
+                    exposure.writeFits("exposure%d.fits" % (expNum,))
+                
+                if not coadd:
+                    print >> sys.stderr, "Create warper and coadd with size and WCS matching the first exposure"
+                    warper = coaddUtils.Warp.fromPolicy(warpPolicy)
+                    coadd = coaddChiSq.Coadd.fromPolicy(
+                        bbox = coaddUtils.bboxFromImage(exposure),
+                        wcs = exposure.getWcs(),
+                        policy = coaddPolicy)
+                    print >> sys.stderr, "badPixelMask=", coadd.getBadPixelMask()
+    
+                    coadd.addExposure(exposure)
+                else:
+                    print >> sys.stderr, "Warp exposure"
+                    warpedExposure = warper.warpExposure(
+                        bbox = coadd.getBBox(),
+                        wcs = coadd.getWcs(),
+                        exposure = exposure)
+                    
+                    coadd.addExposure(warpedExposure)
+                    
+                    if saveDebugImages:
+                        warpedExposure.writeFits("warped%d.fits" % (expNum,))
+
+                numExposuresInCoadd += 1
             except Exception, e:
-                print "Skipping %s: %s" % (filePath, e)
+                print >> sys.stderr, "Exposure %s failed: %s" % (exposurePath, e)
+                traceback.print_exc(file=sys.stderr)
+                numExposuresFailed += 1
                 continue
-            imageShape = tuple(inputExposure.getMaskedImage().getDimensions())
-            wcs = inputExposure.getWcs()
 
-            print "Create Gaussian noise exposure"
-            maskedImage = makeNoiseMaskedImage(shape=imageShape, sigma=imageSigma, variance=variance)
-            exposure = afwImage.ExposureF(maskedImage, wcs)
-            
-            if not coadd:
-                print "Create warper and coadd with size and WCS matching the first exposure"
-                warper = coaddUtils.Warp.fromPolicy(warpPolicy)
-                coadd = coaddChiSq.Coadd(
-                    bbox = coaddUtils.bboxFromImage(exposure),
-                    wcs = exposure.getWcs(),
-                    allowedMaskPlanes = allowedMaskPlanes)
-
-                if saveDebugImages:
-                    exposure.writeFits("warped%s" % (fileName,))
-
-                coadd.addExposure(exposure)
-            else:
-                warpedExposure = warper.warpExposure(
-                    bbox = coadd.getBBox(),
-                    wcs = coadd.getWcs(),
-                    exposure = exposure)
-                
-                coadd.addExposure(warpedExposure)
-                
-                if saveDebugImages:
-                    warpedExposure.writeFits("warped%s" % (fileName,))
-
-    print "Save resulting coadd and weight map"
+    print >> sys.stderr, "Coadded %d exposures and failed %d" % (numExposuresInCoadd, numExposuresFailed)
     weightMap = coadd.getWeightMap()
     weightMap.writeFits(weightPath)
     coaddExposure = coadd.getCoadd()
