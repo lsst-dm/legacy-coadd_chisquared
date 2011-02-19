@@ -34,6 +34,7 @@ The first exposure's WCS and size are used for the coadd.
 """
 import os
 import sys
+import traceback
 
 import lsst.pex.logging as pexLog
 import lsst.pex.policy as pexPolicy
@@ -127,9 +128,9 @@ The policy dictionary is: policy/%s
                     coadd.addExposure(exposure)
                 else:
                     warpedExposure = warper.warpExposure(
-                        bbox = coadd.getBBox(),
                         wcs = coadd.getWcs(),
-                        exposure = exposure)
+                        exposure = exposure,
+                        maxBBox = coadd.getBBox())
                     if saveDebugImages:
                         warpedExposure.writeFits("warped%s.fits" % (expNum,))
                         
@@ -138,7 +139,8 @@ The policy dictionary is: policy/%s
                 numExposuresInCoadd += 1
             except Exception, e:
                 print >> sys.stderr, "Exposure %s failed: %s" % (exposurePath, e)
-                traceback.print_exc(file=sys.stderr)
+                if os.path.exists(exposurePath):
+                    traceback.print_exc(file=sys.stderr)
                 numExposuresFailed += 1
                 continue
 

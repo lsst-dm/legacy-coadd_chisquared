@@ -102,7 +102,7 @@ class CoaddTestCase(unittest.TestCase):
         maxStdDevErr = 0.2
         maxMeanErr = 1.0e-12
         
-        allowedMaskPlanes = "" # we don't set bad bits
+        badMaskPlanes = ["EDGE"]
     
         numpy.random.seed(0)
         
@@ -116,7 +116,7 @@ class CoaddTestCase(unittest.TestCase):
                 coadd = coaddChiSq.Coadd(
                     bbox = coaddUtils.bboxFromImage(exposure),
                     wcs = exposure.getWcs(),
-                    allowedMaskPlanes = allowedMaskPlanes)
+                    badMaskPlanes = badMaskPlanes)
     
             coadd.addExposure(exposure)
     

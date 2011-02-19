@@ -29,6 +29,7 @@ import os
 import sys
 import math
 import optparse
+import traceback
 
 import numpy
 
@@ -118,12 +119,12 @@ saveDebugImages = %s
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
-            filePath = line
+            exposurePath = line
             expNum += 1
             
             try:
-                print >> sys.stderr, "Processing exposure %s" % (filePath,)
-                inputExposure = afwImage.ExposureF(filePath)
+                print >> sys.stderr, "Processing exposure %s" % (exposurePath,)
+                inputExposure = afwImage.ExposureF(exposurePath)
                 imageShape = tuple(inputExposure.getMaskedImage().getDimensions())
                 wcs = inputExposure.getWcs()
     
@@ -147,9 +148,9 @@ saveDebugImages = %s
                 else:
                     print >> sys.stderr, "Warp exposure"
                     warpedExposure = warper.warpExposure(
-                        bbox = coadd.getBBox(),
                         wcs = coadd.getWcs(),
-                        exposure = exposure)
+                        exposure = exposure,
+                        maxBBox = coadd.getBBox())
                     
                     coadd.addExposure(warpedExposure)
                     
@@ -159,7 +160,8 @@ saveDebugImages = %s
                 numExposuresInCoadd += 1
             except Exception, e:
                 print >> sys.stderr, "Exposure %s failed: %s" % (exposurePath, e)
-                traceback.print_exc(file=sys.stderr)
+                if os.path.exists(exposurePath):
+                    traceback.print_exc(file=sys.stderr)
                 numExposuresFailed += 1
                 continue
 

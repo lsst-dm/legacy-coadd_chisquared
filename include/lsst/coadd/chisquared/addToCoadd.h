@@ -31,6 +31,7 @@
 */
 #include "boost/cstdint.hpp"
 
+#include "lsst/afw/geom.h"
 #include "lsst/afw/image.h"
 
 namespace lsst {
@@ -38,7 +39,7 @@ namespace coadd {
 namespace chisquared {
 
     template<typename CoaddPixelT, typename WeightPixelT>
-    void addToCoadd(
+    lsst::afw::geom::BoxI addToCoadd(
         lsst::afw::image::MaskedImage<CoaddPixelT, lsst::afw::image::MaskPixel,
             lsst::afw::image::VariancePixel> &coadd,
         lsst::afw::image::Image<WeightPixelT> &weightMap,

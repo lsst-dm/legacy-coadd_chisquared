@@ -30,10 +30,10 @@ class Coadd(coaddUtils.Coadd):
         """Create a chi-squared coadd
         
         Inputs:
-        - bbox: bounding box of coadd Exposure with respect to parent (lsst.afw.geom.BoxI):
+        @param[in] bbox: bounding box of coadd Exposure with respect to parent (lsst.afw.geom.BoxI):
             coadd dimensions = bbox.getDimensions(); xy0 = bbox.getMin()
-        - wcs: WCS of coadd exposure (lsst.afw.math.Wcs)
-        - badMaskPlanes: mask planes to pay attention to when rejecting masked pixels.
+        @param[in] wcs: WCS of coadd exposure (lsst.afw.math.Wcs)
+        @param[in] badMaskPlanes: mask planes to pay attention to when rejecting masked pixels.
             Specify as a collection of names.
             badMaskPlanes should always include "EDGE".
         """
@@ -49,10 +49,10 @@ class Coadd(coaddUtils.Coadd):
         """Create a coadd
         
         Inputs:
-        - bbox: bounding box of coadd Exposure with respect to parent (lsst.afw.geom.BoxI):
+        @param[in] bbox: bounding box of coadd Exposure with respect to parent (lsst.afw.geom.BoxI):
             coadd dimensions = bbox.getDimensions(); xy0 = bbox.getMin()
-        - wcs: WCS of coadd exposure (lsst.afw.math.Wcs)
-        - policy: coadd policy; see policy/CoaddPolicyDictionary.paf
+        @param[in] wcs: WCS of coadd exposure (lsst.afw.math.Wcs)
+        @param[in] policy: coadd policy; see policy/CoaddPolicyDictionary.paf
         """
         badMaskPlanes = policy.getArray("badMaskPlanes")
         return cls(bbox, wcs, badMaskPlanes)
@@ -61,9 +61,15 @@ class Coadd(coaddUtils.Coadd):
         """Add a an exposure to the coadd; it is assumed to have the same WCS as the coadd
 
         Inputs:
-        - exposure: Exposure to add to coadd; must be background-subtracted and warped to match the coadd.
-        - weight: weight of good pixels for the weight map
+        @param[in] exposure: Exposure to add to coadd; must be background-subtracted and warped to match the coadd.
+        @param[in] weightFactor: weight with which to add exposure to coadd
+
+        @return
+        - overlapBBox: region of overlap between exposure and coadd in parent coordinates (afwGeom.BoxI)
+        - weight: weight with which exposure was added to coadd; weight = weightFactor for this kind of coadd
         """
         self._log.log(pexLog.Log.INFO, "add exposure to coadd")
-        chisquaredLib.addToCoadd(self._coadd.getMaskedImage(), self._weightMap,
+        overlapBBox = chisquaredLib.addToCoadd(self._coadd.getMaskedImage(), self._weightMap,
             exposure.getMaskedImage(), self._badPixelMask, weightFactor)
+
+        return overlapBBox, weightFactor
