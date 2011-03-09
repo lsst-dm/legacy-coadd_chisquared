@@ -38,6 +38,7 @@ import traceback
 
 import lsst.pex.logging as pexLog
 import lsst.pex.policy as pexPolicy
+import lsst.afw.geom as afwGeom
 import lsst.afw.image as afwImage
 import lsst.afw.display.ds9 as ds9
 import lsst.coadd.utils as coaddUtils
