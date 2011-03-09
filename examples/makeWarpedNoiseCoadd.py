@@ -36,27 +36,12 @@ import numpy
 import lsst.pex.logging as pexLog
 import lsst.pex.policy as pexPolicy
 import lsst.afw.image as afwImage
-import lsst.afw.image.testUtils as imTestUtils
+import lsst.afw.image.testUtils as afwTestUtils
 import lsst.coadd.chisquared as coaddChiSq
 import lsst.coadd.utils as coaddUtils
 
 BaseDir = os.path.dirname(__file__)
 PolicyPath = os.path.join(BaseDir, "MakeWarpedNoiseCoaddDictionary.paf")
-
-def makeNoiseMaskedImage(shape, sigma, variance=1.0):
-    """Make a gaussian noise MaskedImageF
-    
-    Inputs:
-    - shape: shape of output array (cols, rows)
-    - sigma; sigma of image distribution
-    - variance: constant value for variance plane
-    """
-    image = numpy.random.normal(loc=0.0, scale=sigma, size=shape)
-    mask = numpy.zeros(shape, dtype=int)
-    variance = numpy.zeros(shape, dtype=float) + variance
-    
-    return imTestUtils.maskedImageFromArrays((image, mask, variance), afwImage.MaskedImageF)
-    
 
 if __name__ == "__main__":
     pexLog.Trace.setVerbosity('lsst.coadd', 5)
@@ -125,12 +110,11 @@ saveDebugImages = %s
             try:
                 print >> sys.stderr, "Processing exposure %s" % (exposurePath,)
                 inputExposure = afwImage.ExposureF(exposurePath)
-                imageShape = tuple(inputExposure.getMaskedImage().getDimensions())
-                wcs = inputExposure.getWcs()
     
                 print >> sys.stderr, "Create Gaussian noise exposure"
-                maskedImage = makeNoiseMaskedImage(shape=imageShape, sigma=imageSigma, variance=variance)
-                exposure = afwImage.ExposureF(maskedImage, wcs)
+                maskedImage = afwTestUtils.makeGaussianNoiseMaskedImage(
+                    dimensions=inputExposure.getDimensions(), sigma=imageSigma, variance=variance)
+                exposure = afwImage.ExposureF(maskedImage, inputExposure.getWcs())
 
                 if saveDebugImages:
                     exposure.writeFits("exposure%d.fits" % (expNum,))
@@ -139,7 +123,7 @@ saveDebugImages = %s
                     print >> sys.stderr, "Create warper and coadd with size and WCS matching the first exposure"
                     warper = coaddUtils.Warp.fromPolicy(warpPolicy)
                     coadd = coaddChiSq.Coadd.fromPolicy(
-                        bbox = coaddUtils.bboxFromImage(exposure),
+                        bbox = exposure.getBBox(afwImage.PARENT),
                         wcs = exposure.getWcs(),
                         policy = coaddPolicy)
                     print >> sys.stderr, "badPixelMask=", coadd.getBadPixelMask()

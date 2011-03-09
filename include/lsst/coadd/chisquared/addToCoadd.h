@@ -39,7 +39,7 @@ namespace coadd {
 namespace chisquared {
 
     template<typename CoaddPixelT, typename WeightPixelT>
-    lsst::afw::geom::BoxI addToCoadd(
+    lsst::afw::geom::Box2I addToCoadd(
         lsst::afw::image::MaskedImage<CoaddPixelT, lsst::afw::image::MaskPixel,
             lsst::afw::image::VariancePixel> &coadd,
         lsst::afw::image::Image<WeightPixelT> &weightMap,

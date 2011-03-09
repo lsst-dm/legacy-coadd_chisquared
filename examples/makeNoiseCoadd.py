@@ -35,30 +35,11 @@ import numpy
 import lsst.pex.logging as pexLog
 import lsst.pex.policy as pexPolicy
 import lsst.afw.image as afwImage
-import lsst.afw.image.testUtils as imTestUtils
-import lsst.coadd.utils as coaddUtils
+import lsst.afw.image.testUtils as afwTestUtils
 import lsst.coadd.chisquared as coaddChiSq
 
 BaseDir = os.path.dirname(__file__)
 PolicyPath = os.path.join(BaseDir, "MakeNoiseCoaddDictionary.paf")
-
-def makeNoiseMaskedImage(shape, sigma, variance=1.0):
-    """Make a gaussian noise MaskedImageF
-    
-    This is painfully slow but afw doesn't support a more direct method
-    and it doesn't seem worth the fuss of coding in C++ in this package
-    
-    Inputs:
-    - shape: shape of output array (cols, rows)
-    - sigma; sigma of image distribution
-    - variance: constant value for variance plane
-    """
-    image = numpy.random.normal(loc=0.0, scale=sigma, size=shape)
-    mask = numpy.zeros(shape, dtype=int)
-    variance = numpy.zeros(shape, dtype=float) + variance
-    
-    return imTestUtils.maskedImageFromArrays((image, mask, variance), afwImage.MaskedImageF)
-    
 
 if __name__ == "__main__":
 #    pexLog.Trace.setVerbosity('lsst.coadd', 5)
@@ -103,7 +84,8 @@ variance   = %0.1f
     coadd = None
     for imInd in range(numImages):
         print >> sys.stderr, "Create exposure %d" % (imInd,)
-        maskedImage = makeNoiseMaskedImage(shape=imageShape, sigma=imageSigma, variance=variance)
+        maskedImage = afwTestUtils.makeGaussianNoiseMaskedImage(
+            dimensions=imageShape, sigma=imageSigma, variance=variance)
         # the WCS doesn't matter; the default will do
         wcs = afwImage.Wcs()
         exposure = afwImage.ExposureF(maskedImage, wcs)
@@ -111,7 +93,7 @@ variance   = %0.1f
         if not coadd:
             print >> sys.stderr, "Create coadd"
             coadd = coaddChiSq.Coadd.fromPolicy(
-                bbox = coaddUtils.bboxFromImage(exposure),
+                bbox = exposure.getBBox(afwImage.PARENT),
                 wcs = exposure.getWcs(),
                 policy = coaddPolicy)
             print >> sys.stderr, "badPixelMask=", coadd.getBadPixelMask()

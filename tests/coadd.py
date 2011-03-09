@@ -35,7 +35,7 @@ import numpy
 import lsst.utils.tests as utilsTests
 import lsst.pex.policy as pexPolicy
 import lsst.afw.image as afwImage
-import lsst.afw.image.testUtils as imTestUtils
+import lsst.afw.image.testUtils as afwTestUtils
 import lsst.coadd.utils as coaddUtils
 import lsst.coadd.chisquared as coaddChiSq
 
@@ -43,20 +43,6 @@ doPlot = False
 
 if doPlot:
     import matplotlib.pyplot as pyplot
-
-def makeNoiseMaskedImage(shape, sigma, imVariance=1.0):
-    """Make a gaussian noise MaskedImageF
-    
-    Inputs:
-    - shape: shape of output array (cols, rows)
-    - sigma; sigma of image distribution
-    - imVariance: constant value for imVariance plane
-    """
-    image = numpy.random.normal(loc=0.0, scale=sigma, size=shape)
-    mask = numpy.zeros(shape, dtype=int)
-    imVariance = numpy.zeros(shape, dtype=float) + imVariance
-    
-    return imTestUtils.maskedImageFromArrays((image, mask, imVariance), afwImage.MaskedImageF)
 
 def makeHistogram(coadd, numBins, numImages):
     """Generate a histogram for a given coadd maskedImage
@@ -71,7 +57,7 @@ def makeHistogram(coadd, numBins, numImages):
     - histY: y values for histogram of coadd data (number of pixels)
     - chiSqY: chi squared distribution values corresponding to histX
     """
-    coaddData = imTestUtils.arrayFromImage(coadd.getImage())
+    coaddData = coadd.getImage().getArray()
     # undo normalization
     coaddData *= float(numImages)
     # get rid of nans and infs
@@ -109,12 +95,13 @@ class CoaddTestCase(unittest.TestCase):
         coadd = None
         wcs = afwImage.Wcs()
         for imInd in range(numImages):
-            maskedImage = makeNoiseMaskedImage(shape=imShape, sigma=imSigma, imVariance=imVariance)
+            maskedImage = afwTestUtils.makeGaussianNoiseMaskedImage(
+                dimensions=imShape, sigma=imSigma, variance=imVariance)
             exposure = afwImage.ExposureF(maskedImage, wcs)
             
             if not coadd:
                 coadd = coaddChiSq.Coadd(
-                    bbox = coaddUtils.bboxFromImage(exposure),
+                    bbox = exposure.getBBox(afwImage.PARENT),
                     wcs = exposure.getWcs(),
                     badMaskPlanes = badMaskPlanes)
     

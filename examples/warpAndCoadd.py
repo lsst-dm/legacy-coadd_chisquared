@@ -89,9 +89,9 @@ The policy dictionary is: policy/%s
     saveDebugImages = policy.get("saveDebugImages")
     bboxMin = policy.getArray("bboxMin")
     bboxSize = policy.getArray("bboxSize")
-    bbox = afwImage.BBox(afwImage.PointI(bboxMin[0], bboxMin[1]), bboxSize[0], bboxSize[1])
+    bbox = afwGeom.Box2I(afwGeom.Point2I(bboxMin[0], bboxMin[1]), afwGeom.Extent2I(bboxSize[0], bboxSize[1]))
     print >> sys.stderr, "saveDebugImages =", saveDebugImages
-    print >> sys.stderr, "BBox =", bbox
+    print >> sys.stderr, "bbox =", bbox
 
     # process exposures
     coadd = None
@@ -108,7 +108,7 @@ The policy dictionary is: policy/%s
             try:
                 print >> sys.stderr, "Processing exposure %s" % (exposurePath,)
                 try:
-                    exposure = afwImage.ExposureF(exposurePath, 0, bbox)
+                    exposure = afwImage.ExposureF(exposurePath, 0, bbox, afwImage.LOCAL)
                 except Exception, e:
                     print >> sys.stderr, "Skipping %s: %s" % (exposurePath, e)
                     continue
@@ -120,7 +120,7 @@ The policy dictionary is: policy/%s
                     maskedImage = exposure.getMaskedImage()
                     warper = coaddUtils.Warp.fromPolicy(warpPolicy)
                     coadd = coaddChiSq.Coadd.fromPolicy(
-                        bbox = coaddUtils.bboxFromImage(exposure),
+                        bbox = exposure.getBBox(afwImage.PARENT),
                         wcs = exposure.getWcs(),
                         policy = coaddPolicy)
                     print >> sys.stderr, "badPixelMask=", coadd.getBadPixelMask()
