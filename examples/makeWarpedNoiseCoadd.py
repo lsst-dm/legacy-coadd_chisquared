@@ -36,9 +36,9 @@ import numpy
 import lsst.pex.logging as pexLog
 import lsst.pex.policy as pexPolicy
 import lsst.afw.image as afwImage
+import lsst.afw.math as afwMath
 import lsst.afw.image.testUtils as afwTestUtils
 import lsst.coadd.chisquared as coaddChiSq
-import lsst.coadd.utils as coaddUtils
 
 BaseDir = os.path.dirname(__file__)
 PolicyPath = os.path.join(BaseDir, "MakeWarpedNoiseCoaddDictionary.paf")
@@ -121,7 +121,7 @@ saveDebugImages = %s
                 
                 if not coadd:
                     print >> sys.stderr, "Create warper and coadd with size and WCS matching the first exposure"
-                    warper = coaddUtils.Warp.fromPolicy(warpPolicy)
+                    warper = afwMath.Warper.fromPolicy(warpPolicy)
                     coadd = coaddChiSq.Coadd.fromPolicy(
                         bbox = exposure.getBBox(afwImage.PARENT),
                         wcs = exposure.getWcs(),
@@ -132,8 +132,8 @@ saveDebugImages = %s
                 else:
                     print >> sys.stderr, "Warp exposure"
                     warpedExposure = warper.warpExposure(
-                        wcs = coadd.getWcs(),
-                        exposure = exposure,
+                        destWcs = coadd.getWcs(),
+                        srcExposure = exposure,
                         maxBBox = coadd.getBBox())
                     
                     coadd.addExposure(warpedExposure)

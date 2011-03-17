@@ -40,8 +40,8 @@ import lsst.pex.logging as pexLog
 import lsst.pex.policy as pexPolicy
 import lsst.afw.geom as afwGeom
 import lsst.afw.image as afwImage
+import lsst.afw.math as afwMath
 import lsst.afw.display.ds9 as ds9
-import lsst.coadd.utils as coaddUtils
 import lsst.coadd.chisquared as coaddChiSq
 
 PolicyPackageName = "coadd_utils"
@@ -119,7 +119,7 @@ The policy dictionary is: policy/%s
                 if not coadd:
                     print >> sys.stderr, "Create warper and coadd with size and WCS matching the first exposure"
                     maskedImage = exposure.getMaskedImage()
-                    warper = coaddUtils.Warp.fromPolicy(warpPolicy)
+                    warper = afwMath.Warper.fromPolicy(warpPolicy)
                     coadd = coaddChiSq.Coadd.fromPolicy(
                         bbox = exposure.getBBox(afwImage.PARENT),
                         wcs = exposure.getWcs(),
@@ -129,8 +129,8 @@ The policy dictionary is: policy/%s
                     coadd.addExposure(exposure)
                 else:
                     warpedExposure = warper.warpExposure(
-                        wcs = coadd.getWcs(),
-                        exposure = exposure,
+                        destWcs = coadd.getWcs(),
+                        srcExposure = exposure,
                         maxBBox = coadd.getBBox())
                     if saveDebugImages:
                         warpedExposure.writeFits("warped%s.fits" % (expNum,))
