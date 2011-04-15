@@ -38,9 +38,10 @@ import traceback
 
 import lsst.pex.logging as pexLog
 import lsst.pex.policy as pexPolicy
+import lsst.afw.geom as afwGeom
 import lsst.afw.image as afwImage
+import lsst.afw.math as afwMath
 import lsst.afw.display.ds9 as ds9
-import lsst.coadd.utils as coaddUtils
 import lsst.coadd.chisquared as coaddChiSq
 
 PolicyPackageName = "coadd_utils"
@@ -89,9 +90,9 @@ The policy dictionary is: policy/%s
     saveDebugImages = policy.get("saveDebugImages")
     bboxMin = policy.getArray("bboxMin")
     bboxSize = policy.getArray("bboxSize")
-    bbox = afwImage.BBox(afwImage.PointI(bboxMin[0], bboxMin[1]), bboxSize[0], bboxSize[1])
+    bbox = afwGeom.Box2I(afwGeom.Point2I(bboxMin[0], bboxMin[1]), afwGeom.Extent2I(bboxSize[0], bboxSize[1]))
     print >> sys.stderr, "saveDebugImages =", saveDebugImages
-    print >> sys.stderr, "BBox =", bbox
+    print >> sys.stderr, "bbox =", bbox
 
     # process exposures
     coadd = None
@@ -108,7 +109,7 @@ The policy dictionary is: policy/%s
             try:
                 print >> sys.stderr, "Processing exposure %s" % (exposurePath,)
                 try:
-                    exposure = afwImage.ExposureF(exposurePath, 0, bbox)
+                    exposure = afwImage.ExposureF(exposurePath, 0, bbox, afwImage.LOCAL)
                 except Exception, e:
                     print >> sys.stderr, "Skipping %s: %s" % (exposurePath, e)
                     continue
@@ -118,9 +119,9 @@ The policy dictionary is: policy/%s
                 if not coadd:
                     print >> sys.stderr, "Create warper and coadd with size and WCS matching the first exposure"
                     maskedImage = exposure.getMaskedImage()
-                    warper = coaddUtils.Warp.fromPolicy(warpPolicy)
+                    warper = afwMath.Warper.fromPolicy(warpPolicy)
                     coadd = coaddChiSq.Coadd.fromPolicy(
-                        bbox = coaddUtils.bboxFromImage(exposure),
+                        bbox = exposure.getBBox(afwImage.PARENT),
                         wcs = exposure.getWcs(),
                         policy = coaddPolicy)
                     print >> sys.stderr, "badPixelMask=", coadd.getBadPixelMask()
@@ -128,8 +129,8 @@ The policy dictionary is: policy/%s
                     coadd.addExposure(exposure)
                 else:
                     warpedExposure = warper.warpExposure(
-                        wcs = coadd.getWcs(),
-                        exposure = exposure,
+                        destWcs = coadd.getWcs(),
+                        srcExposure = exposure,
                         maxBBox = coadd.getBBox())
                     if saveDebugImages:
                         warpedExposure.writeFits("warped%s.fits" % (expNum,))

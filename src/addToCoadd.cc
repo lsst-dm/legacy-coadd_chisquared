@@ -54,7 +54,7 @@ namespace coaddChiSq = lsst::coadd::chisquared;
 * @throw pexExcept::InvalidParameterException if coadd and weightMap dimensions or xy0 do not match.
 */
 template <typename CoaddPixelT, typename WeightPixelT>
-afwGeom::BoxI coaddChiSq::addToCoadd(
+afwGeom::Box2I coaddChiSq::addToCoadd(
     // spell out lsst:afw::image to make Doxygen happy
     lsst::afw::image::MaskedImage<CoaddPixelT, lsst::afw::image::MaskPixel,
         lsst::afw::image::VariancePixel> &coadd,        ///< [in,out] coadd to be modified
@@ -67,37 +67,21 @@ afwGeom::BoxI coaddChiSq::addToCoadd(
     typedef typename afwImage::MaskedImage<CoaddPixelT, afwImage::MaskPixel, afwImage::VariancePixel> Coadd;
     typedef typename afwImage::Image<WeightPixelT> WeightMap;
 
-    if (coadd.getDimensions() != weightMap.getDimensions()) {
+    if (coadd.getBBox(afwImage::PARENT) != weightMap.getBBox(afwImage::PARENT)) {
         throw LSST_EXCEPT(pexExcept::InvalidParameterException,
-            (boost::format("coadd and weightMap dimensions differ: %dx%d != %dx%d") %
-            coadd.getWidth() % coadd.getHeight() % weightMap.getWidth() % weightMap.getHeight()).str());
-    }
-    if (coadd.getXY0() != weightMap.getXY0()) {
-        throw LSST_EXCEPT(pexExcept::InvalidParameterException,
-            (boost::format("coadd and weightMap xy0 differ: %d,%d != %d,%d") %
-            coadd.getX0() % coadd.getY0() % weightMap.getX0() % weightMap.getY0()).str());
+            (boost::format("coadd and weightMap parent bboxes differ: %s != %s") %
+            coadd.getBBox(afwImage::PARENT) % weightMap.getBBox(afwImage::PARENT)).str());
     }
 
-    afwGeom::BoxI overlapBox = afwGeom::BoxI(
-        afwGeom::makePointI(coadd.getX0(), coadd.getY0()),
-        afwGeom::makeExtentI(coadd.getWidth(), coadd.getHeight()));
-    overlapBox.clip(afwGeom::BoxI(
-        afwGeom::makePointI(image.getX0(), image.getY0()),
-        afwGeom::makeExtentI(image.getWidth(), image.getHeight())));
-    if (overlapBox.isEmpty()) {
-        return overlapBox;
+    afwGeom::Box2I overlapBBox = coadd.getBBox(afwImage::PARENT);
+    overlapBBox.clip(image.getBBox(afwImage::PARENT));
+    if (overlapBBox.isEmpty()) {
+        return overlapBBox;
     }
 
-    afwImage::BBox coaddSubregion(
-        afwImage::PointI(overlapBox.getMinX() - coadd.getX0(), overlapBox.getMinY() - coadd.getY0()),
-        overlapBox.getWidth(), overlapBox.getHeight());
-    Coadd coaddView(coadd, coaddSubregion, false);
-    WeightMap weightMapView(weightMap, coaddSubregion, false);
-
-    afwImage::BBox imageSubregion(
-        afwImage::PointI(overlapBox.getMinX() - image.getX0(), overlapBox.getMinY() - image.getY0()),
-        overlapBox.getWidth(), overlapBox.getHeight());
-    Coadd imageView(image, imageSubregion, false);
+    Coadd coaddView(coadd, overlapBBox, afwImage::PARENT, false);
+    WeightMap weightMapView(weightMap, overlapBBox, afwImage::PARENT, false);
+    Coadd imageView(image, overlapBBox, afwImage::PARENT, false);
 
     for (int y = 0, endY = imageView.getHeight(); y != endY; ++y) {
         typename Coadd::const_x_iterator imageIter = imageView.row_begin(y);
@@ -113,7 +97,7 @@ afwGeom::BoxI coaddChiSq::addToCoadd(
             }
         }
     }
-    return overlapBox;
+    return overlapBBox;
 }
 
 //
@@ -122,7 +106,7 @@ afwGeom::BoxI coaddChiSq::addToCoadd(
 #define MASKEDIMAGE(IMAGEPIXEL) afwImage::MaskedImage<IMAGEPIXEL, \
     afwImage::MaskPixel, afwImage::VariancePixel>
 #define INSTANTIATE(COADDPIXEL, WEIGHTPIXEL) \
-    template afwGeom::BoxI coaddChiSq::addToCoadd<COADDPIXEL, WEIGHTPIXEL>( \
+    template afwGeom::Box2I coaddChiSq::addToCoadd<COADDPIXEL, WEIGHTPIXEL>( \
         MASKEDIMAGE(COADDPIXEL) &coadd, \
         afwImage::Image<WEIGHTPIXEL> &weightMap, \
         MASKEDIMAGE(COADDPIXEL) const &image, \
