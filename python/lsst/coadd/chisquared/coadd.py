@@ -41,6 +41,7 @@ class Coadd(coaddUtils.Coadd):
             bbox = bbox,
             wcs = wcs,
             badMaskPlanes = badMaskPlanes,
+            coaddZeroPoint = 27.0, # this value is ignored
             logName = "coadd.chisquared.Coadd",
         )
     
@@ -73,3 +74,10 @@ class Coadd(coaddUtils.Coadd):
             exposure.getMaskedImage(), self._badPixelMask, weightFactor)
 
         return overlapBBox, weightFactor
+    
+    def _setCalib(self, *dumArgs):
+        """Set _coaddZeroPoint and add a Calib object to self._coadd
+        
+        Chi-squared coadds have no calibration so make this a null operation
+        """
+        pass
