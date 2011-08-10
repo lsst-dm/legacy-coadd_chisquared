@@ -70,6 +70,11 @@ class Coadd(coaddUtils.Coadd):
         - weight: weight with which exposure was added to coadd; weight = weightFactor for this kind of coadd
         """
         self._log.log(pexLog.Log.INFO, "add exposure to coadd")
+
+        # save filter info
+        filter = exposure.getFilter()
+        self._filterDict.setdefault(filter.getName(), filter)
+
         overlapBBox = chisquaredLib.addToCoadd(self._coadd.getMaskedImage(), self._weightMap,
             exposure.getMaskedImage(), self._badPixelMask, weightFactor)
 

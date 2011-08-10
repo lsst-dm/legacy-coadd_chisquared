@@ -35,9 +35,11 @@ import numpy
 import lsst.utils.tests as utilsTests
 import lsst.pex.policy as pexPolicy
 import lsst.afw.image as afwImage
+import lsst.afw.image.utils as imageUtils
 import lsst.afw.image.testUtils as afwTestUtils
 import lsst.coadd.utils as coaddUtils
 import lsst.coadd.chisquared as coaddChiSq
+import lsst.pex.policy as pexPolicy
 
 doPlot = False
 
@@ -126,6 +128,63 @@ class CoaddTestCase(unittest.TestCase):
             self.fail("Standard deviation of error = %s > %s limit" % (errArr.std(), maxStdDevErr))
         if errArr.mean() > maxMeanErr:
             self.fail("Mean of error = %s > %s limit" % (errArr.mean(), maxMeanErr))
+
+    def testFilters(self):
+        """Test that the coadd filter is set correctly
+        """
+        filterPolicyFile = pexPolicy.DefaultPolicyFile("afw", "SdssFilters.paf", "tests")
+        filterPolicy = pexPolicy.Policy.createPolicy(filterPolicyFile, filterPolicyFile.getRepositoryPath(), True)
+        imageUtils.defineFiltersFromPolicy(filterPolicy, reset=True)
+        
+        unkFilter = afwImage.Filter()
+        gFilter = afwImage.Filter("g")
+        rFilter = afwImage.Filter("r")
+
+        imShape = (150, 150)
+        imSigma = 1.0
+        imVariance = 1.0
+        
+        badMaskPlanes = ["EDGE"]
+    
+        numpy.random.seed(0)
+        
+        coadd = None
+        wcs = afwImage.Wcs()
+        maskedImage = afwTestUtils.makeGaussianNoiseMaskedImage(
+            dimensions=imShape, sigma=imSigma, variance=imVariance)
+        inExp = afwImage.ExposureF(maskedImage, wcs)
+
+        coadd = coaddChiSq.Coadd(
+            bbox = inExp.getBBox(afwImage.PARENT),
+            wcs = inExp.getWcs(),
+            badMaskPlanes = badMaskPlanes,
+        )
+
+        inExp.setFilter(gFilter)
+        coadd.addExposure(inExp)
+        self.assertEqualFilters(coadd.getCoadd().getFilter(), gFilter)
+        self.assertEqualFilterSets(coadd.getFilters(), (gFilter,))
+        coadd.addExposure(inExp)
+        self.assertEqualFilters(coadd.getCoadd().getFilter(), gFilter)
+        self.assertEqualFilterSets(coadd.getFilters(), (gFilter,))
+        
+        inExp.setFilter(rFilter)
+        coadd.addExposure(inExp)
+        self.assertEqualFilters(coadd.getCoadd().getFilter(), unkFilter)
+        self.assertEqualFilterSets(coadd.getFilters(), (gFilter, rFilter))
+    
+    def assertEqualFilters(self, f1, f2):
+        """Compare two filters
+        
+        Right now compares only the name, but if == ever works for Filters (ticket #1744)
+        then use == instead
+        """
+        self.assertEquals(f1.getName(), f2.getName())
+    
+    def assertEqualFilterSets(self, fs1, fs2):
+        """Assert that two collections of filters are equal, ignoring order
+        """
+        self.assertEquals(set(f.getName() for f in fs1), set(f.getName() for f in fs2))
 
 def suite():
     """Return a suite containing all the test cases in this module.
