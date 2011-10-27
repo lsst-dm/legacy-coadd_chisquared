@@ -1,5 +1,4 @@
 // -*- LSST-C++ -*-
-
 /* 
  * LSST Data Management System
  * Copyright 2008, 2009, 2010 LSST Corporation.
@@ -21,7 +20,6 @@
  * the GNU General Public License along with this program.  If not, 
  * see <http://www.lsstcorp.org/LegalNotices/>.
  */
- 
 /**
 * @file
 *
@@ -37,22 +35,6 @@ namespace afwImage = lsst::afw::image;
 namespace afwGeom = lsst::afw::geom;
 namespace coaddChiSq = lsst::coadd::chisquared;
 
-/**
-* @brief add good pixels from a masked image to a coadd and associated weight map
-* using the chi squared algorithm
-*
-* For good pixels (image.mask & badPixelMask == 0), coadd and weightMap are altered as follows:
-* coadd.image += (image.image / sqrt(image.variance))**2
-* coadd.mask |= image.mask
-* weightMap += weight
-* For bad pixels, coadd and weightMap are not altered.
-*
-* Note that coadd.variance is not altered.
-*
-* @return overlapBBox: overlapping bounding box, relative to parent image (hence xy0 is taken into account)
-*
-* @throw pexExcept::InvalidParameterException if coadd and weightMap dimensions or xy0 do not match.
-*/
 template <typename CoaddPixelT, typename WeightPixelT>
 afwGeom::Box2I coaddChiSq::addToCoadd(
     // spell out lsst:afw::image to make Doxygen happy
@@ -103,6 +85,7 @@ afwGeom::Box2I coaddChiSq::addToCoadd(
 //
 // Explicit instantiations
 //
+/// \cond
 #define MASKEDIMAGE(IMAGEPIXEL) afwImage::MaskedImage<IMAGEPIXEL, \
     afwImage::MaskPixel, afwImage::VariancePixel>
 #define INSTANTIATE(COADDPIXEL, WEIGHTPIXEL) \
@@ -122,3 +105,4 @@ INSTANTIATE(float, double);
 INSTANTIATE(float, float);
 INSTANTIATE(float, int);
 INSTANTIATE(float, boost::uint16_t);
+/// \endcond

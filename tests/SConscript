@@ -1,9 +1,4 @@
 # -*- python -*-
-Import("env")
+from lsst.sconsUtils import scripts
 
-import lsst.tests
-
-tests = lsst.tests.Control(env, ignoreList=[])
-
-for target in tests.run("*.py"):
-    env.Depends(target, "../python/lsst/coadd/chisquared/_chisquaredLib%s" % (env["LDMODULESUFFIX"]))
+scripts.BasicSConscript.tests()
