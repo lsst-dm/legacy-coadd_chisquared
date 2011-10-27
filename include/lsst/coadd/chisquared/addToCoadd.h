@@ -42,7 +42,7 @@ namespace chisquared {
     * using the chi squared algorithm
     *
     * For good pixels (image.mask & badPixelMask == 0), coadd and weightMap are altered as follows:
-    * coadd.image += (image.image / sqrt(image.variance))**2
+    * coadd.image += image.image**2 / image.variance
     * coadd.mask |= image.mask
     * weightMap += weight
     * For bad pixels, coadd and weightMap are not altered.

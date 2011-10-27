@@ -72,8 +72,8 @@ afwGeom::Box2I coaddChiSq::addToCoadd(
         typename WeightMap::x_iterator weightMapIter = weightMapView.row_begin(y);
         for (; imageIter != imageEndIter; ++imageIter, ++coaddIter, ++weightMapIter) {
             if ((imageIter.mask() & badPixelMask) == 0) {
-                CoaddPixelT value = imageIter.image() / std::sqrt(imageIter.variance());
-                coaddIter.image() += value * value;
+                CoaddPixelT value = imageIter.image() * imageIter.image() / imageIter.variance();
+                coaddIter.image() += value;
                 coaddIter.mask() |= imageIter.mask();
                 *weightMapIter += weight;
             }

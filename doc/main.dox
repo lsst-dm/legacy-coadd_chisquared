@@ -1,16 +1,16 @@
 /**
 \mainpage lsst::coadd::chisquared;  Support for chi-squared coadds
 
-\section secIntro Introduction
+\section coaddChiSquared_introduction Introduction
 
-Code to support chi-squared coaddition of images.
+Code to support chi-squared coaddition of images: sum of image^2/variance
 
 Functions available from C++ and Python:
 
-@li lsst::coadd::utils::addToCoadd: add good pixels from an Image or MaskedImage to a chi-squared coadd
+@li lsst::coadd::chisquared::addToCoadd: add good pixels from an Image or MaskedImage to a chi-squared coadd
 
 Classes available only from Python:
 
-@li @link coadd::utils::coadd::Coadd@endlink: a chi-squared coadd with a method to add additional exposures
+@li lsst.coadd.chisquared.Coadd: a chi-squared coadd with a method to add additional exposures
 */
 }}}
