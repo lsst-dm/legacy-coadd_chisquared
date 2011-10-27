@@ -56,12 +56,12 @@ namespace chisquared {
     template<typename CoaddPixelT, typename WeightPixelT>
     lsst::afw::geom::Box2I addToCoadd(
         lsst::afw::image::MaskedImage<CoaddPixelT, lsst::afw::image::MaskPixel,
-            lsst::afw::image::VariancePixel> &coadd,
-        lsst::afw::image::Image<WeightPixelT> &weightMap,
+            lsst::afw::image::VariancePixel> &coadd,        ///< [in,out] coadd to be modified
+        lsst::afw::image::Image<WeightPixelT> &weightMap,   ///< [in,out] weight map to be modified
         lsst::afw::image::MaskedImage<CoaddPixelT, lsst::afw::image::MaskPixel,
-            lsst::afw::image::VariancePixel> const &maskedImage,
-        lsst::afw::image::MaskPixel const badPixelMask,
-        WeightPixelT weight
+            lsst::afw::image::VariancePixel> const &maskedImage,   ///< masked image to add to coadd
+        lsst::afw::image::MaskPixel const badPixelMask, ///< skip input pixel if input mask & badPixelMask !=0
+        WeightPixelT weight ///< relative weight of this image
     );
 
 }}} // lsst::coadd::chisquared

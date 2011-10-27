@@ -39,12 +39,12 @@ template <typename CoaddPixelT, typename WeightPixelT>
 afwGeom::Box2I coaddChiSq::addToCoadd(
     // spell out lsst:afw::image to make Doxygen happy
     lsst::afw::image::MaskedImage<CoaddPixelT, lsst::afw::image::MaskPixel,
-        lsst::afw::image::VariancePixel> &coadd,        ///< [in,out] coadd to be modified
-    lsst::afw::image::Image<WeightPixelT> &weightMap,   ///< [in,out] weight map to be modified
+        lsst::afw::image::VariancePixel> &coadd,
+    lsst::afw::image::Image<WeightPixelT> &weightMap,
     lsst::afw::image::MaskedImage<CoaddPixelT, lsst::afw::image::MaskPixel,
-        lsst::afw::image::VariancePixel> const &image,  ///< masked image to add to coadd
-    lsst::afw::image::MaskPixel const badPixelMask, ///< skip input pixel if input mask | badPixelMask != 0
-    WeightPixelT weight ///< relative weight of this image
+        lsst::afw::image::VariancePixel> const &image,
+    lsst::afw::image::MaskPixel const badPixelMask,
+    WeightPixelT weight
 ) {
     typedef typename afwImage::MaskedImage<CoaddPixelT, afwImage::MaskPixel, afwImage::VariancePixel> Coadd;
     typedef typename afwImage::Image<WeightPixelT> WeightMap;
