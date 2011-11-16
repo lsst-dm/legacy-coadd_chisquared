@@ -1,0 +1,21 @@
+
+# /
+/config.log
+/.scon*
+
+# /doc/
+/doc/htmlDir
+
+# /lib/
+/lib/libcoadd_chisquared.*
+
+# /python/lsst/coadd/chisquared/
+/python/lsst/coadd/chisquared/chisquaredLib.py
+/python/lsst/coadd/chisquared/*_wrap.*
+/python/lsst/coadd/chisquared/*.so
+
+# /src/
+/src/*.os
+
+# /tests/
+/tests/.tests
