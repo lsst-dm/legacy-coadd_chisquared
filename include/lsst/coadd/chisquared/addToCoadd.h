@@ -1,5 +1,4 @@
 // -*- LSST-C++ -*-
-
 /* 
  * LSST Data Management System
  * Copyright 2008, 2009, 2010 LSST Corporation.
@@ -38,15 +37,31 @@ namespace lsst {
 namespace coadd {
 namespace chisquared {
 
+    /**
+    * @brief add good pixels from a masked image to a coadd and associated weight map
+    * using the chi squared algorithm
+    *
+    * For good pixels (image.mask & badPixelMask == 0), coadd and weightMap are altered as follows:
+    * coadd.image += image.image**2 / image.variance
+    * coadd.mask |= image.mask
+    * weightMap += weight
+    * For bad pixels, coadd and weightMap are not altered.
+    *
+    * Note that coadd.variance is not altered.
+    *
+    * @return overlapBBox: overlapping bounding box, relative to parent image (hence xy0 is taken into account)
+    *
+    * @throw pexExcept::InvalidParameterException if coadd and weightMap dimensions or xy0 do not match.
+    */
     template<typename CoaddPixelT, typename WeightPixelT>
     lsst::afw::geom::Box2I addToCoadd(
         lsst::afw::image::MaskedImage<CoaddPixelT, lsst::afw::image::MaskPixel,
-            lsst::afw::image::VariancePixel> &coadd,
-        lsst::afw::image::Image<WeightPixelT> &weightMap,
+            lsst::afw::image::VariancePixel> &coadd,        ///< [in,out] coadd to be modified
+        lsst::afw::image::Image<WeightPixelT> &weightMap,   ///< [in,out] weight map to be modified
         lsst::afw::image::MaskedImage<CoaddPixelT, lsst::afw::image::MaskPixel,
-            lsst::afw::image::VariancePixel> const &maskedImage,
-        lsst::afw::image::MaskPixel const badPixelMask,
-        WeightPixelT weight
+            lsst::afw::image::VariancePixel> const &maskedImage,   ///< masked image to add to coadd
+        lsst::afw::image::MaskPixel const badPixelMask, ///< skip input pixel if input mask & badPixelMask !=0
+        WeightPixelT weight ///< relative weight of this image
     );
 
 }}} // lsst::coadd::chisquared

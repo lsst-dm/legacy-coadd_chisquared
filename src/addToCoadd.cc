@@ -1,5 +1,4 @@
 // -*- LSST-C++ -*-
-
 /* 
  * LSST Data Management System
  * Copyright 2008, 2009, 2010 LSST Corporation.
@@ -21,7 +20,6 @@
  * the GNU General Public License along with this program.  If not, 
  * see <http://www.lsstcorp.org/LegalNotices/>.
  */
- 
 /**
 * @file
 *
@@ -37,32 +35,16 @@ namespace afwImage = lsst::afw::image;
 namespace afwGeom = lsst::afw::geom;
 namespace coaddChiSq = lsst::coadd::chisquared;
 
-/**
-* @brief add good pixels from a masked image to a coadd and associated weight map
-* using the chi squared algorithm
-*
-* For good pixels (image.mask & badPixelMask == 0), coadd and weightMap are altered as follows:
-* coadd.image += (image.image / sqrt(image.variance))**2
-* coadd.mask |= image.mask
-* weightMap += weight
-* For bad pixels, coadd and weightMap are not altered.
-*
-* Note that coadd.variance is not altered.
-*
-* @return overlapBBox: overlapping bounding box, relative to parent image (hence xy0 is taken into account)
-*
-* @throw pexExcept::InvalidParameterException if coadd and weightMap dimensions or xy0 do not match.
-*/
 template <typename CoaddPixelT, typename WeightPixelT>
 afwGeom::Box2I coaddChiSq::addToCoadd(
     // spell out lsst:afw::image to make Doxygen happy
     lsst::afw::image::MaskedImage<CoaddPixelT, lsst::afw::image::MaskPixel,
-        lsst::afw::image::VariancePixel> &coadd,        ///< [in,out] coadd to be modified
-    lsst::afw::image::Image<WeightPixelT> &weightMap,   ///< [in,out] weight map to be modified
+        lsst::afw::image::VariancePixel> &coadd,
+    lsst::afw::image::Image<WeightPixelT> &weightMap,
     lsst::afw::image::MaskedImage<CoaddPixelT, lsst::afw::image::MaskPixel,
-        lsst::afw::image::VariancePixel> const &image,  ///< masked image to add to coadd
-    lsst::afw::image::MaskPixel const badPixelMask, ///< skip input pixel if input mask | badPixelMask != 0
-    WeightPixelT weight ///< relative weight of this image
+        lsst::afw::image::VariancePixel> const &image,
+    lsst::afw::image::MaskPixel const badPixelMask,
+    WeightPixelT weight
 ) {
     typedef typename afwImage::MaskedImage<CoaddPixelT, afwImage::MaskPixel, afwImage::VariancePixel> Coadd;
     typedef typename afwImage::Image<WeightPixelT> WeightMap;
@@ -90,8 +72,8 @@ afwGeom::Box2I coaddChiSq::addToCoadd(
         typename WeightMap::x_iterator weightMapIter = weightMapView.row_begin(y);
         for (; imageIter != imageEndIter; ++imageIter, ++coaddIter, ++weightMapIter) {
             if ((imageIter.mask() & badPixelMask) == 0) {
-                CoaddPixelT value = imageIter.image() / std::sqrt(imageIter.variance());
-                coaddIter.image() += value * value;
+                CoaddPixelT value = imageIter.image() * imageIter.image() / imageIter.variance();
+                coaddIter.image() += value;
                 coaddIter.mask() |= imageIter.mask();
                 *weightMapIter += weight;
             }
@@ -103,6 +85,7 @@ afwGeom::Box2I coaddChiSq::addToCoadd(
 //
 // Explicit instantiations
 //
+/// \cond
 #define MASKEDIMAGE(IMAGEPIXEL) afwImage::MaskedImage<IMAGEPIXEL, \
     afwImage::MaskPixel, afwImage::VariancePixel>
 #define INSTANTIATE(COADDPIXEL, WEIGHTPIXEL) \
@@ -122,3 +105,4 @@ INSTANTIATE(float, double);
 INSTANTIATE(float, float);
 INSTANTIATE(float, int);
 INSTANTIATE(float, boost::uint16_t);
+/// \endcond
