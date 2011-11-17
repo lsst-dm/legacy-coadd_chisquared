@@ -4,13 +4,4 @@ import os
 
 from lsst.sconsUtils import scripts
 
-ccExamples = []
-for path in glob.glob("#examples/*.cc"):
-    base, name = os.path.split(path)
-    if name.endswith("_wrap.cc"):
-        continue
-    ccExamples.append(name)
-
-scripts.BasicSConscript.examples(
-    ccExamples=ccExamples,
-)
+scripts.BasicSConscript.examples()

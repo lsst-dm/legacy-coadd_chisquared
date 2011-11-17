@@ -20,5 +20,5 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
-from chisquaredLib import *
-from coadd import *
+from .chisquaredLib import *
+from .coadd import *
