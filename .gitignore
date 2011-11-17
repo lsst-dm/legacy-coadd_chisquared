@@ -6,6 +6,8 @@
 # /doc/
 /doc/htmlDir
 
+ups/*.cfgc
+
 # /lib/
 /lib/libcoadd_chisquared.*
 
