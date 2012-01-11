@@ -27,21 +27,16 @@ from __future__ import with_statement
 """
 import os
 import sys
-import math
-import optparse
 import traceback
 
 import numpy
 
 import lsst.pex.logging as pexLog
-import lsst.pex.policy as pexPolicy
 import lsst.afw.image as afwImage
 import lsst.afw.math as afwMath
 import lsst.afw.image.testUtils as afwTestUtils
 import lsst.coadd.chisquared as coaddChiSq
-
-BaseDir = os.path.dirname(__file__)
-PolicyPath = os.path.join(BaseDir, "MakeWarpedNoiseCoaddDictionary.paf")
+from noiseCoaddConfig import NoiseCoaddConfig
 
 if __name__ == "__main__":
     pexLog.Trace.setVerbosity('lsst.coadd', 5)
@@ -62,9 +57,7 @@ Make a chi-squared coadd from a set of warped Gaussian noise images.
 The WCSs for the Gaussian images are taken from a list of input images
 (which are only used for their WCS).
 The intent is to see how correlated noise affects the statistics of a pure noise coadd.
-
-The policy controlling the parameters is %s
-""" % (PolicyPath,)
+"""
     if len(sys.argv) != 3:
         print helpStr
         sys.exit(0)
@@ -77,20 +70,14 @@ The policy controlling the parameters is %s
     
     indata = sys.argv[2]
 
-    policy = pexPolicy.Policy.createPolicy(PolicyPath)
+    config = NoiseCoaddConfig()
 
-    saveDebugImages = policy.getBool("saveDebugImages")
-    imageSigma = policy.getDouble("imageSigma")
-    variance = policy.getDouble("variance")
-    warpPolicy = policy.getPolicy("warpPolicy")
-    coaddPolicy = policy.getPolicy("coaddPolicy")
-    
     sys.stderr.write("""
 coaddPath  = %s
 imageSigma = %0.1f
 variance   = %0.1f
 saveDebugImages = %s
-""" % (coaddPath, imageSigma, variance, saveDebugImages))
+""" % (coaddPath, config.imageSigma, config.variance, config.saveDebugImages))
     
     numpy.random.seed(0)
 
@@ -113,19 +100,23 @@ saveDebugImages = %s
     
                 print >> sys.stderr, "Create Gaussian noise exposure"
                 maskedImage = afwTestUtils.makeGaussianNoiseMaskedImage(
-                    dimensions=inputExposure.getDimensions(), sigma=imageSigma, variance=variance)
+                    dimensions = inputExposure.getDimensions(),
+                    sigma = config.imageSigma,
+                    variance = config.variance,
+                )
                 exposure = afwImage.ExposureF(maskedImage, inputExposure.getWcs())
 
-                if saveDebugImages:
+                if config.saveDebugImages:
                     exposure.writeFits("exposure%d.fits" % (expNum,))
                 
                 if not coadd:
                     print >> sys.stderr, "Create warper and coadd with size and WCS matching the first exposure"
-                    warper = afwMath.Warper.fromPolicy(warpPolicy)
-                    coadd = coaddChiSq.Coadd.fromPolicy(
+                    warper = afwMath.Warper.fromConfig(config.warp)
+                    coadd = coaddChiSq.Coadd.fromConfig(
                         bbox = exposure.getBBox(afwImage.PARENT),
                         wcs = exposure.getWcs(),
-                        policy = coaddPolicy)
+                        config = config.coadd,
+                    )
                     print >> sys.stderr, "badPixelMask=", coadd.getBadPixelMask()
     
                     coadd.addExposure(exposure)
@@ -134,11 +125,12 @@ saveDebugImages = %s
                     warpedExposure = warper.warpExposure(
                         destWcs = coadd.getWcs(),
                         srcExposure = exposure,
-                        maxBBox = coadd.getBBox())
+                        maxBBox = coadd.getBBox(),
+                    )
                     
                     coadd.addExposure(warpedExposure)
                     
-                    if saveDebugImages:
+                    if config.saveDebugImages:
                         warpedExposure.writeFits("warped%d.fits" % (expNum,))
 
                 numExposuresInCoadd += 1

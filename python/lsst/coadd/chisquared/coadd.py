@@ -46,17 +46,16 @@ class Coadd(coaddUtils.Coadd):
         )
     
     @classmethod
-    def fromPolicy(cls, bbox, wcs, policy):
+    def fromConfig(cls, bbox, wcs, config):
         """Create a coadd
         
         Inputs:
         @param[in] bbox: bounding box of coadd Exposure with respect to parent (afwGeom.Box2I):
             coadd dimensions = bbox.getDimensions(); xy0 = bbox.getMin()
         @param[in] wcs: WCS of coadd exposure (lsst.afw.math.Wcs)
-        @param[in] policy: coadd policy; see policy/CoaddPolicyDictionary.paf
+        @param[in] config: an instance of self.ConfigClass
         """
-        badMaskPlanes = policy.getArray("badMaskPlanes")
-        return cls(bbox, wcs, badMaskPlanes)
+        return cls(bbox, wcs, config.badMaskPlanes)
 
     def addExposure(self, exposure, weightFactor=1.0):
         """Add a an exposure to the coadd; it is assumed to have the same WCS as the coadd

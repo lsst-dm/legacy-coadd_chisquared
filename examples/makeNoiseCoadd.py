@@ -27,19 +27,14 @@ from __future__ import with_statement
 """
 import os
 import sys
-import math
-import optparse
 
 import numpy
 
 import lsst.pex.logging as pexLog
-import lsst.pex.policy as pexPolicy
 import lsst.afw.image as afwImage
 import lsst.afw.image.testUtils as afwTestUtils
 import lsst.coadd.chisquared as coaddChiSq
-
-BaseDir = os.path.dirname(__file__)
-PolicyPath = os.path.join(BaseDir, "MakeNoiseCoaddDictionary.paf")
+from noiseCoaddConfig import NoiseCoaddConfig
 
 if __name__ == "__main__":
 #    pexLog.Trace.setVerbosity('lsst.coadd', 5)
@@ -52,9 +47,7 @@ where:
 Make a chi-squared coadd from a set of Gaussian noise images.
 The result should closely match the predicted chi squared distribution.
 Run the resulting coadd through makeHistogram to see this.
-
-The policy controlling the parameters is %s
-""" % (PolicyPath,)
+"""
     if len(sys.argv) != 3:
         print helpStr
         sys.exit(0)
@@ -64,20 +57,15 @@ The policy controlling the parameters is %s
     
     numImages = int(sys.argv[2])
 
-    policy = pexPolicy.Policy.createPolicy(PolicyPath)
+    config = NoiseCoaddConfig()
 
-    imageShape = policy.getArray("imageShape")
-    imageSigma = policy.getDouble("imageSigma")
-    variance = policy.getDouble("variance")
-    coaddPolicy = policy.getPolicy("coaddPolicy")
-    
     sys.stderr.write("""
 coaddPath  = %s
 numImages  = %d
 imageShape = %s
 imageSigma = %0.1f
 variance   = %0.1f
-""" % (coaddPath, numImages, imageShape, imageSigma, variance))
+""" % (coaddPath, numImages, config.imageShape, config.imageSigma, config.variance))
     
     numpy.random.seed(0)
     
@@ -85,17 +73,17 @@ variance   = %0.1f
     for imInd in range(numImages):
         print >> sys.stderr, "Create exposure %d" % (imInd,)
         maskedImage = afwTestUtils.makeGaussianNoiseMaskedImage(
-            dimensions=imageShape, sigma=imageSigma, variance=variance)
+            dimensions=config.imageShape, sigma=config.imageSigma, variance=config.variance)
         # the WCS doesn't matter; the default will do
         wcs = afwImage.Wcs()
         exposure = afwImage.ExposureF(maskedImage, wcs)
         
         if not coadd:
             print >> sys.stderr, "Create coadd"
-            coadd = coaddChiSq.Coadd.fromPolicy(
+            coadd = coaddChiSq.Coadd.fromConfig(
                 bbox = exposure.getBBox(afwImage.PARENT),
                 wcs = exposure.getWcs(),
-                policy = coaddPolicy)
+                config = config.coadd)
             print >> sys.stderr, "badPixelMask=", coadd.getBadPixelMask()
 
         coadd.addExposure(exposure)
