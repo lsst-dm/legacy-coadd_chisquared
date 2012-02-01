@@ -29,31 +29,31 @@ import lsst.coadd.chisquared as coaddChiSq
 
 class NoiseCoaddConfig(pexConfig.Config):
     saveDebugImages = pexConfig.Field(
-        bool,
+        dtype = bool,
         doc = "Save warped intermediate images?",
         default = False,
     )
     imageShape = pexConfig.ListField(
-        int,
+        dtype = int,
         doc = "Constant value of variance pixels",
         length = 2,
         default = (256, 256),
     )
     imageSigma = pexConfig.Field(
-        float,
+        dtype = float,
         doc = "Sigma of Gaussian noise for image pixels",
         default = 1.0,
     )
     variance = pexConfig.Field(
-        float,
+        dtype = float,
         doc = "Constant value of variance pixels",
         default = 1.0,
     )
     warp = pexConfig.ConfigField(
-        afwMath.Warper.ConfigClass,
+        dtype = afwMath.Warper.ConfigClass,
         doc = "Policy to control warping.",
     )
     coadd = pexConfig.ConfigField(
-        coaddChiSq.Coadd.ConfigClass,
+        dtype = coaddChiSq.Coadd.ConfigClass,
         doc = "Policy to control coadd.",
     )
