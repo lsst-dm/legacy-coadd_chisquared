@@ -37,24 +37,24 @@ import lsst.coadd.chisquared as coaddChiSq
 
 class WarpAndCoaddConfig(pexConfig.Config):
     saveDebugImages = pexConfig.Field(
-        bool,
+        dtype = bool,
         doc = "Save intermediate images?",
         default = False,
     )
     bboxMin = pexConfig.ListField(
-        int,
+        dtype = int,
         doc = "Lower left corner of bounding box used to subframe to all input images",
         default = (0, 0),
         length = 2,
     )
     bboxSize = pexConfig.ListField(
-        int,
+        dtype = int,
         doc = "Size of bounding box used to subframe all input images; 0 0 for full input images",
         default = (0, 0),
         length = 2,
     )
-    coadd = pexConfig.ConfigField(coaddChiSq.Coadd.ConfigClass, doc="")
-    warp = pexConfig.ConfigField(afwMath.Warper.ConfigClass, doc="")
+    coadd = pexConfig.ConfigField(dtype = coaddChiSq.Coadd.ConfigClass, doc = "")
+    warp = pexConfig.ConfigField(dtype = afwMath.Warper.ConfigClass, doc = "")
     
 
 def warpAndCoadd(coaddPath, exposureListPath, config):
