@@ -26,7 +26,7 @@ import chisquaredLib
 __all__ = ["Coadd"]
 
 class Coadd(coaddUtils.Coadd):
-    def __init__(self, bbox, wcs, badMaskPlanes):
+    def __init__(self, bbox, wcs, badMaskPlanes, logName="coadd.chisquared.Coadd"):
         """Create a chi-squared coadd
         
         Inputs:
@@ -36,32 +36,23 @@ class Coadd(coaddUtils.Coadd):
         @param[in] badMaskPlanes: mask planes to pay attention to when rejecting masked pixels.
             Specify as a collection of names.
             badMaskPlanes should always include "EDGE".
+        @param[in] logName: name by which messages are logged
         """
         coaddUtils.Coadd.__init__(self,
             bbox = bbox,
             wcs = wcs,
             badMaskPlanes = badMaskPlanes,
-            coaddZeroPoint = 27.0, # this value is ignored
-            logName = "coadd.chisquared.Coadd",
+            logName = logName,
         )
-    
-    @classmethod
-    def fromConfig(cls, bbox, wcs, config):
-        """Create a coadd
-        
-        Inputs:
-        @param[in] bbox: bounding box of coadd Exposure with respect to parent (afwGeom.Box2I):
-            coadd dimensions = bbox.getDimensions(); xy0 = bbox.getMin()
-        @param[in] wcs: WCS of coadd exposure (lsst.afw.math.Wcs)
-        @param[in] config: an instance of self.ConfigClass
-        """
-        return cls(bbox, wcs, config.badMaskPlanes)
 
     def addExposure(self, exposure, weightFactor=1.0):
         """Add a an exposure to the coadd; it is assumed to have the same WCS as the coadd
 
         Inputs:
-        @param[in] exposure: Exposure to add to coadd; must be background-subtracted and warped to match the coadd.
+        @param[in] exposure: Exposure to add to coadd; this must be:
+            - background-subtracted or background-matched to the other images being coadded
+            - psf-matched to the desired PSF model (optional)
+            - warped to match the coadd
         @param[in] weightFactor: weight with which to add exposure to coadd
 
         @return
@@ -78,10 +69,3 @@ class Coadd(coaddUtils.Coadd):
             exposure.getMaskedImage(), self._badPixelMask, weightFactor)
 
         return overlapBBox, weightFactor
-    
-    def _setCalib(self, *dumArgs):
-        """Set _coaddZeroPoint and add a Calib object to self._coadd
-        
-        Chi-squared coadds have no calibration so make this a null operation
-        """
-        pass
