@@ -33,15 +33,12 @@ Python interface to lsst::coadd::chisquared functions and classes
 
 %{
 #include "boost/cstdint.hpp"
-#include "lsst/pex/logging.h"
-#include "lsst/afw/math.h"
-#include "lsst/afw/cameraGeom.h"
 #include "lsst/coadd/chisquared.h"
 %}
 
 %include "lsst/p_lsstSwig.i"
-%import  "lsst/afw/image/imageLib.i" 
-%import  "lsst/afw/math/mathLib.i" 
+%import  "lsst/afw/image/Image.i"
+%import  "lsst/afw/image/MaskedImage.i"
 
 %lsst_exceptions()
 
