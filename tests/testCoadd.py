@@ -95,7 +95,7 @@ class CoaddTestCase(unittest.TestCase):
         numpy.random.seed(0)
         
         coadd = None
-        wcs = afwImage.Wcs()
+        wcs = None
         for imInd in range(numImages):
             maskedImage = afwTestUtils.makeGaussianNoiseMaskedImage(
                 dimensions=imShape, sigma=imSigma, variance=imVariance)
@@ -149,7 +149,7 @@ class CoaddTestCase(unittest.TestCase):
         numpy.random.seed(0)
         
         coadd = None
-        wcs = afwImage.Wcs()
+        wcs = None
         maskedImage = afwTestUtils.makeGaussianNoiseMaskedImage(
             dimensions=imShape, sigma=imSigma, variance=imVariance)
         inExp = afwImage.ExposureF(maskedImage, wcs)
