@@ -50,7 +50,7 @@ afwGeom::Box2I coaddChiSq::addToCoadd(
     typedef typename afwImage::Image<WeightPixelT> WeightMap;
 
     if (coadd.getBBox(afwImage::PARENT) != weightMap.getBBox(afwImage::PARENT)) {
-        throw LSST_EXCEPT(pexExcept::InvalidParameterException,
+        throw LSST_EXCEPT(pexExcept::InvalidParameterError,
             (boost::format("coadd and weightMap parent bboxes differ: %s != %s") %
             coadd.getBBox(afwImage::PARENT) % weightMap.getBBox(afwImage::PARENT)).str());
     }
