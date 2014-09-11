@@ -113,7 +113,7 @@ saveDebugImages = %s
                     print >> sys.stderr, "Create warper and coadd with size and WCS matching the first exposure"
                     warper = afwMath.Warper.fromConfig(config.warp)
                     coadd = coaddChiSq.Coadd.fromConfig(
-                        bbox = exposure.getBBox(afwImage.PARENT),
+                        bbox = exposure.getBBox(),
                         wcs = exposure.getWcs(),
                         config = config.coadd,
                     )
