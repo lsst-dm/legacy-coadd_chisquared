@@ -30,7 +30,6 @@ import sys
 
 import numpy
 
-import lsst.pex.logging as pexLog
 import lsst.afw.image as afwImage
 import lsst.afw.image.testUtils as afwTestUtils
 import lsst.coadd.chisquared as coaddChiSq
@@ -81,7 +80,7 @@ variance   = %0.1f
         if not coadd:
             print >> sys.stderr, "Create coadd"
             coadd = coaddChiSq.Coadd.fromConfig(
-                bbox = exposure.getBBox(afwImage.PARENT),
+                bbox = exposure.getBBox(),
                 wcs = exposure.getWcs(),
                 config = config.coadd)
             print >> sys.stderr, "badPixelMask=", coadd.getBadPixelMask()
