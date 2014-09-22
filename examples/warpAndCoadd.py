@@ -102,7 +102,7 @@ def warpAndCoadd(coaddPath, exposureListPath, config):
                     print >> sys.stderr, "Create warper and coadd with size and WCS matching the first/reference exposure"
                     warper = afwMath.Warper.fromConfig(config.warp)
                     coadd = coaddChiSq.Coadd.fromConfig(
-                        bbox = exposure.getBBox(afwImage.PARENT),
+                        bbox = exposure.getBBox(),
                         wcs = exposure.getWcs(),
                         config = config.coadd)
                     print "badPixelMask=", coadd.getBadPixelMask()

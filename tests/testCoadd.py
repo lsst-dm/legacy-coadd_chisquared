@@ -25,9 +25,6 @@
 from __future__ import with_statement
 """Test Coadd class
 """
-import os
-import sys
-import math
 import unittest
 
 import numpy
@@ -37,9 +34,7 @@ import lsst.pex.policy as pexPolicy
 import lsst.afw.image as afwImage
 import lsst.afw.image.utils as imageUtils
 import lsst.afw.image.testUtils as afwTestUtils
-import lsst.coadd.utils as coaddUtils
 import lsst.coadd.chisquared as coaddChiSq
-import lsst.pex.policy as pexPolicy
 
 doPlot = False
 
@@ -103,13 +98,13 @@ class CoaddTestCase(unittest.TestCase):
             
             if not coadd:
                 coadd = coaddChiSq.Coadd(
-                    bbox = exposure.getBBox(afwImage.PARENT),
+                    bbox = exposure.getBBox(),
                     wcs = exposure.getWcs(),
                     badMaskPlanes = badMaskPlanes)
     
             coadd.addExposure(exposure)
     
-        weightMap = coadd.getWeightMap()
+        coadd.getWeightMap()
         coaddExposure = coadd.getCoadd()
         
         histX, histY, chiSqY = makeHistogram(coaddExposure.getMaskedImage(), numBins=numBins, numImages=numImages)
@@ -155,7 +150,7 @@ class CoaddTestCase(unittest.TestCase):
         inExp = afwImage.ExposureF(maskedImage, wcs)
 
         coadd = coaddChiSq.Coadd(
-            bbox = inExp.getBBox(afwImage.PARENT),
+            bbox = inExp.getBBox(),
             wcs = inExp.getWcs(),
             badMaskPlanes = badMaskPlanes,
         )
