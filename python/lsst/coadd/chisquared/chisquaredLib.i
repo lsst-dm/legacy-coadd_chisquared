@@ -40,6 +40,7 @@ Python interface to lsst::coadd::chisquared functions and classes
 %}
 
 %include "lsst/p_lsstSwig.i"
+%initializeNumPy(coadd_chisquared)
 %import  "lsst/afw/image/imageLib.i" 
 %import  "lsst/afw/math/mathLib.i" 
 
