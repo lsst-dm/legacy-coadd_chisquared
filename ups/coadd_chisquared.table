@@ -1,5 +1,7 @@
 setupRequired(coadd_utils)
 setupRequired(numpy)
+setupRequired(scons)
+setupRequired(sconsUtils)
 
 setupOptional(afwdata)
 
