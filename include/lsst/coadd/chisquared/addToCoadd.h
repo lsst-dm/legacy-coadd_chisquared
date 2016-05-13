@@ -28,8 +28,6 @@
 *
 * @author Russell Owen
 */
-#include "boost/cstdint.hpp"
-
 #include "lsst/afw/geom.h"
 #include "lsst/afw/image.h"
 
