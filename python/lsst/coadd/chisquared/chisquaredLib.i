@@ -32,7 +32,7 @@ Python interface to lsst::coadd::chisquared functions and classes
 %module(package="lsst.coadd.chisquared", docstring=chisquaredLib_DOCSTRING) chisquaredLib
 
 %{
-#include "boost/cstdint.hpp"
+#include <cstdint>
 #include "lsst/pex/logging.h"
 #include "lsst/afw/math.h"
 #include "lsst/afw/cameraGeom.h"
@@ -53,8 +53,8 @@ Python interface to lsst::coadd::chisquared functions and classes
 %ADDTOCOADD(double, double);
 %ADDTOCOADD(double, float);
 %ADDTOCOADD(double, int);
-%ADDTOCOADD(double, boost::uint16_t);
+%ADDTOCOADD(double, std::uint16_t);
 %ADDTOCOADD(float, double);
 %ADDTOCOADD(float, float);
 %ADDTOCOADD(float, int);
-%ADDTOCOADD(float, boost::uint16_t);
+%ADDTOCOADD(float, std::uint16_t);

@@ -26,6 +26,7 @@
 * @author Russell Owen
 */
 #include <cmath>
+#include <cstdint>
 
 #include "lsst/pex/exceptions.h"
 #include "lsst/coadd/chisquared/addToCoadd.h"
@@ -100,9 +101,9 @@ afwGeom::Box2I coaddChiSq::addToCoadd(
 INSTANTIATE(double, double);
 INSTANTIATE(double, float);
 INSTANTIATE(double, int);
-INSTANTIATE(double, boost::uint16_t);
+INSTANTIATE(double, std::uint16_t);
 INSTANTIATE(float, double);
 INSTANTIATE(float, float);
 INSTANTIATE(float, int);
-INSTANTIATE(float, boost::uint16_t);
+INSTANTIATE(float, std::uint16_t);
 /// \endcond
