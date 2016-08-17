@@ -23,6 +23,7 @@
 #
 
 from __future__ import with_statement
+from builtins import range
 """Make a coadd from gaussian noise images
 """
 from __future__ import print_function

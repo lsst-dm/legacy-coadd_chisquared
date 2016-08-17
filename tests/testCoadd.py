@@ -22,11 +22,11 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
-from __future__ import with_statement
 """Test Coadd class
 """
 import unittest
 
+from builtins import range
 import numpy
 
 import lsst.utils.tests as utilsTests

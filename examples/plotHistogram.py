@@ -23,6 +23,7 @@
 #
 
 from __future__ import with_statement
+from builtins import zip
 """Plot a histogram for a chi squared coadd and overlay a chi squared distribution
 """
 from __future__ import print_function
@@ -138,7 +139,7 @@ def plotHistogram(coaddName, weightMapName):
             chiSqDistY = chiSqDist
         plotNameSet.append((pyplot.plot(plotDataX, chiSqDistY), "ChiSq %0.1f" % (fudgedOrder,)))
 
-    plots, plotNames = zip(*plotNameSet)
+    plots, plotNames = list(zip(*plotNameSet))
     pyplot.legend(plots, plotNames, loc=0)
 
     # set plot limits
