@@ -25,6 +25,7 @@
 from __future__ import with_statement
 """Plot a histogram for a chi squared coadd and overlay a chi squared distribution
 """
+from __future__ import print_function
 import os
 import sys
 import math
@@ -80,9 +81,9 @@ def plotHistogram(coaddName, weightMapName):
     goodData = numpy.extract(goodData < 50, goodData)
     numBig = tempLen - len(goodData)
     numTotal = len(coaddData.flat)
-    print "ChiSquared order = %d; %d good pixels; %0.1f%% had wrong order; %0.1f%% were not finite; %0.1f%% >= 50" % \
+    print("ChiSquared order = %d; %d good pixels; %0.1f%% had wrong order; %0.1f%% were not finite; %0.1f%% >= 50" % \
         (chiSqOrder, len(goodData), numWrongOrder * 100.0 / numTotal,
-         numNotFinite * 100.0 / numTotal, numBig * 100.0 / numTotal)
+         numNotFinite * 100.0 / numTotal, numBig * 100.0 / numTotal))
 
     hist, binEdges = numpy.histogram(goodData, bins=NBins)
     hist = numpy.array(hist, dtype=float)
@@ -164,7 +165,7 @@ where:
 - coaddfile is the path of the coadd image
 """
     if len(sys.argv) != 2:
-        print helpStr
+        print(helpStr)
         sys.exit(0)
 
     coaddName = sys.argv[1]

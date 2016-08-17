@@ -23,6 +23,7 @@
 #
 """Demonstrate how to create a coadd by warping and adding.
 """
+from __future__ import print_function
 import os
 import sys
 import time
@@ -76,8 +77,8 @@ def warpAndCoadd(coaddPath, exposureListPath, config):
         afwGeom.Point2I(config.bboxMin[0], config.bboxMin[1]),
         afwGeom.Extent2I(config.bboxSize[0], config.bboxSize[1]),
     )
-    print "SaveDebugImages =", config.saveDebugImages
-    print "bbox =", bbox
+    print("SaveDebugImages =", config.saveDebugImages)
+    print("bbox =", bbox)
 
     # process exposures
     accumGoodTime = 0
@@ -93,25 +94,25 @@ def warpAndCoadd(coaddPath, exposureListPath, config):
             expNum += 1
 
             try:
-                print >> sys.stderr, "Processing exposure: %s" % (exposurePath,)
+                print("Processing exposure: %s" % (exposurePath,), file=sys.stderr)
                 startTime = time.time()
                 exposure = afwImage.ExposureF(exposurePath, 0, bbox, afwImage.LOCAL)
                 if config.saveDebugImages:
                     exposure.writeFits("exposure%s.fits" % (expNum,))
 
                 if not coadd:
-                    print >> sys.stderr, "Create warper and coadd with size and WCS matching the first/reference exposure"
+                    print("Create warper and coadd with size and WCS matching the first/reference exposure", file=sys.stderr)
                     warper = afwMath.Warper.fromConfig(config.warp)
                     coadd = coaddChiSq.Coadd.fromConfig(
                         bbox=exposure.getBBox(),
                         wcs=exposure.getWcs(),
                         config=config.coadd)
-                    print "badPixelMask=", coadd.getBadPixelMask()
+                    print("badPixelMask=", coadd.getBadPixelMask())
 
-                    print >> sys.stderr, "Add reference exposure to coadd (without warping)"
+                    print("Add reference exposure to coadd (without warping)", file=sys.stderr)
                     coadd.addExposure(exposure)
                 else:
-                    print >> sys.stderr, "Warp exposure"
+                    print("Warp exposure", file=sys.stderr)
                     warpedExposure = warper.warpExposure(
                         destWcs=coadd.getWcs(),
                         srcExposure=exposure,
@@ -120,32 +121,32 @@ def warpAndCoadd(coaddPath, exposureListPath, config):
                     if config.saveDebugImages:
                         warpedExposure.writeFits("warped%s.fits" % (expNum,))
 
-                    print >> sys.stderr, "Add warped exposure to coadd"
+                    print("Add warped exposure to coadd", file=sys.stderr)
                     coadd.addExposure(warpedExposure)
 
                     # ignore time for first exposure since nothing happens to it
                     deltaTime = time.time() - startTime
-                    print >> sys.stderr, "Elapsed time for processing exposure: %0.1f sec" % (deltaTime,)
+                    print("Elapsed time for processing exposure: %0.1f sec" % (deltaTime,), file=sys.stderr)
                     accumGoodTime += deltaTime
                 numExposuresInCoadd += 1
-            except Exception, e:
-                print >> sys.stderr, "Exposure %s failed: %s" % (exposurePath, e)
+            except Exception as e:
+                print("Exposure %s failed: %s" % (exposurePath, e), file=sys.stderr)
                 traceback.print_exc(file=sys.stderr)
                 numExposuresFailed += 1
                 continue
 
     coaddExposure = coadd.getCoadd()
     coaddExposure.writeFits(coaddPath)
-    print >> sys.stderr, "Wrote coadd: %s" % (coaddPath,)
+    print("Wrote coadd: %s" % (coaddPath,), file=sys.stderr)
     weightMap = coadd.getWeightMap()
     weightMap.writeFits(weightPath)
-    print >> sys.stderr, "Wrote weightMap: %s" % (weightPath,)
+    print("Wrote weightMap: %s" % (weightPath,), file=sys.stderr)
 
-    print >> sys.stderr, "Coadded %d exposures and failed %d" % (numExposuresInCoadd, numExposuresFailed)
+    print("Coadded %d exposures and failed %d" % (numExposuresInCoadd, numExposuresFailed), file=sys.stderr)
     if numExposuresInCoadd > 1:
         timePerGoodExposure = accumGoodTime / float(numExposuresInCoadd - 1)
-        print >> sys.stderr, "Processing speed: %.1f seconds/exposure (ignoring first and failed)" % \
-            (timePerGoodExposure,)
+        print("Processing speed: %.1f seconds/exposure (ignoring first and failed)" % \
+            (timePerGoodExposure,), file=sys.stderr)
 
 if __name__ == "__main__":
     pexLog.Trace.setVerbosity('lsst.coadd', 3)
@@ -162,12 +163,12 @@ where:
   - empty lines and lines that start with # are ignored.
 """
     if len(sys.argv) != 3:
-        print helpStr
+        print(helpStr)
         sys.exit(0)
 
     coaddPath = sys.argv[1]
     if os.path.exists(coaddPath):
-        print >> sys.stderr, "Coadd file %s already exists" % (coaddPath,)
+        print("Coadd file %s already exists" % (coaddPath,), file=sys.stderr)
         sys.exit(1)
 
     exposureListPath = sys.argv[2]

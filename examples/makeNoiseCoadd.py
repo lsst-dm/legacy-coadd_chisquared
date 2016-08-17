@@ -25,6 +25,7 @@
 from __future__ import with_statement
 """Make a coadd from gaussian noise images
 """
+from __future__ import print_function
 import os
 import sys
 
@@ -48,7 +49,7 @@ The result should closely match the predicted chi squared distribution.
 Run the resulting coadd through makeHistogram to see this.
 """
     if len(sys.argv) != 3:
-        print helpStr
+        print(helpStr)
         sys.exit(0)
 
     coaddPath = sys.argv[1]
@@ -70,7 +71,7 @@ variance   = %0.1f
 
     coadd = None
     for imInd in range(numImages):
-        print >> sys.stderr, "Create exposure %d" % (imInd,)
+        print("Create exposure %d" % (imInd,), file=sys.stderr)
         maskedImage = afwTestUtils.makeGaussianNoiseMaskedImage(
             dimensions=config.imageShape, sigma=config.imageSigma, variance=config.variance)
         # the WCS doesn't matter; the default will do
@@ -78,18 +79,18 @@ variance   = %0.1f
         exposure = afwImage.ExposureF(maskedImage, wcs)
 
         if not coadd:
-            print >> sys.stderr, "Create coadd"
+            print("Create coadd", file=sys.stderr)
             coadd = coaddChiSq.Coadd.fromConfig(
                 bbox=exposure.getBBox(),
                 wcs=exposure.getWcs(),
                 config=config.coadd)
-            print >> sys.stderr, "badPixelMask=", coadd.getBadPixelMask()
+            print("badPixelMask=", coadd.getBadPixelMask(), file=sys.stderr)
 
         coadd.addExposure(exposure)
 
-    print >> sys.stderr, "Save weight map as %s" % (weightPath,)
+    print("Save weight map as %s" % (weightPath,), file=sys.stderr)
     weightMap = coadd.getWeightMap()
     weightMap.writeFits(weightPath)
     coaddExposure = coadd.getCoadd()
-    print >> sys.stderr, "Save coadd as %s" % (coaddPath,)
+    print("Save coadd as %s" % (coaddPath,), file=sys.stderr)
     coaddExposure.writeFits(coaddPath)

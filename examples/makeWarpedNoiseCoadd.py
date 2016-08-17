@@ -25,6 +25,7 @@
 from __future__ import with_statement
 """Make a coadd from warped gaussian noise images
 """
+from __future__ import print_function
 import os
 import sys
 import traceback
@@ -59,12 +60,12 @@ The WCSs for the Gaussian images are taken from a list of input images
 The intent is to see how correlated noise affects the statistics of a pure noise coadd.
 """
     if len(sys.argv) != 3:
-        print helpStr
+        print(helpStr)
         sys.exit(0)
 
     coaddPath = sys.argv[1]
     if os.path.exists(coaddPath):
-        print >> sys.stderr, "Coadd file %s already exists" % (coaddPath,)
+        print("Coadd file %s already exists" % (coaddPath,), file=sys.stderr)
         sys.exit(1)
     weightPath = os.path.splitext(coaddPath)[0] + "_weight.fits"
 
@@ -95,10 +96,10 @@ saveDebugImages = %s
             expNum += 1
 
             try:
-                print >> sys.stderr, "Processing exposure %s" % (exposurePath,)
+                print("Processing exposure %s" % (exposurePath,), file=sys.stderr)
                 inputExposure = afwImage.ExposureF(exposurePath)
 
-                print >> sys.stderr, "Create Gaussian noise exposure"
+                print("Create Gaussian noise exposure", file=sys.stderr)
                 maskedImage = afwTestUtils.makeGaussianNoiseMaskedImage(
                     dimensions=inputExposure.getDimensions(),
                     sigma=config.imageSigma,
@@ -110,18 +111,18 @@ saveDebugImages = %s
                     exposure.writeFits("exposure%d.fits" % (expNum,))
 
                 if not coadd:
-                    print >> sys.stderr, "Create warper and coadd with size and WCS matching the first exposure"
+                    print("Create warper and coadd with size and WCS matching the first exposure", file=sys.stderr)
                     warper = afwMath.Warper.fromConfig(config.warp)
                     coadd = coaddChiSq.Coadd.fromConfig(
                         bbox=exposure.getBBox(),
                         wcs=exposure.getWcs(),
                         config=config.coadd,
                     )
-                    print >> sys.stderr, "badPixelMask=", coadd.getBadPixelMask()
+                    print("badPixelMask=", coadd.getBadPixelMask(), file=sys.stderr)
 
                     coadd.addExposure(exposure)
                 else:
-                    print >> sys.stderr, "Warp exposure"
+                    print("Warp exposure", file=sys.stderr)
                     warpedExposure = warper.warpExposure(
                         destWcs=coadd.getWcs(),
                         srcExposure=exposure,
@@ -134,14 +135,14 @@ saveDebugImages = %s
                         warpedExposure.writeFits("warped%d.fits" % (expNum,))
 
                 numExposuresInCoadd += 1
-            except Exception, e:
-                print >> sys.stderr, "Exposure %s failed: %s" % (exposurePath, e)
+            except Exception as e:
+                print("Exposure %s failed: %s" % (exposurePath, e), file=sys.stderr)
                 if os.path.exists(exposurePath):
                     traceback.print_exc(file=sys.stderr)
                 numExposuresFailed += 1
                 continue
 
-    print >> sys.stderr, "Coadded %d exposures and failed %d" % (numExposuresInCoadd, numExposuresFailed)
+    print("Coadded %d exposures and failed %d" % (numExposuresInCoadd, numExposuresFailed), file=sys.stderr)
     weightMap = coadd.getWeightMap()
     weightMap.writeFits(weightPath)
     coaddExposure = coadd.getCoadd()

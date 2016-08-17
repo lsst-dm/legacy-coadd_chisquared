@@ -25,6 +25,7 @@
 from __future__ import with_statement
 """Plot a histogram of the counts in an image
 """
+from __future__ import print_function
 import os
 import sys
 import math
@@ -42,7 +43,7 @@ where:
 - image is the path of the image
 """
     if len(sys.argv) != 2:
-        print helpStr
+        print(helpStr)
         sys.exit(0)
 
     imagePath = sys.argv[1]
