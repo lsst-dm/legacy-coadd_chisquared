@@ -1,7 +1,7 @@
-# 
+#
 # LSST Data Management System
 # Copyright 2008, 2009, 2010 LSST Corporation.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -9,14 +9,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 import lsst.pex.logging as pexLog
@@ -25,10 +25,12 @@ import chisquaredLib
 
 __all__ = ["Coadd"]
 
+
 class Coadd(coaddUtils.Coadd):
+
     def __init__(self, bbox, wcs, badMaskPlanes, logName="coadd.chisquared.Coadd"):
         """Create a chi-squared coadd
-        
+
         Inputs:
         @param[in] bbox: bounding box of coadd Exposure with respect to parent (afwGeom.Box2I):
             coadd dimensions = bbox.getDimensions(); xy0 = bbox.getMin()
@@ -39,11 +41,11 @@ class Coadd(coaddUtils.Coadd):
         @param[in] logName: name by which messages are logged
         """
         coaddUtils.Coadd.__init__(self,
-            bbox = bbox,
-            wcs = wcs,
-            badMaskPlanes = badMaskPlanes,
-            logName = logName,
-        )
+                                  bbox=bbox,
+                                  wcs=wcs,
+                                  badMaskPlanes=badMaskPlanes,
+                                  logName=logName,
+                                  )
 
     def addExposure(self, exposure, weightFactor=1.0):
         """Add a an exposure to the coadd; it is assumed to have the same WCS as the coadd
@@ -66,6 +68,6 @@ class Coadd(coaddUtils.Coadd):
         self._filterDict.setdefault(filter.getName(), filter)
 
         overlapBBox = chisquaredLib.addToCoadd(self._coadd.getMaskedImage(), self._weightMap,
-            exposure.getMaskedImage(), self._badPixelMask, weightFactor)
+                                               exposure.getMaskedImage(), self._badPixelMask, weightFactor)
 
         return overlapBBox, weightFactor

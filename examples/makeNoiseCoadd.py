@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-# 
+#
 # LSST Data Management System
 # Copyright 2008, 2009, 2010 LSST Corporation.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -11,14 +11,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
@@ -36,7 +36,7 @@ import lsst.coadd.chisquared as coaddChiSq
 from noiseCoaddConfig import NoiseCoaddConfig
 
 if __name__ == "__main__":
-#    pexLog.Trace.setVerbosity('lsst.coadd', 5)
+    #    pexLog.Trace.setVerbosity('lsst.coadd', 5)
     helpStr = """Usage: makeCoadd.py coaddPath numImages
 
 where:
@@ -53,7 +53,7 @@ Run the resulting coadd through makeHistogram to see this.
 
     coaddPath = sys.argv[1]
     weightPath = os.path.splitext(coaddPath)[0] + "_weight.fits"
-    
+
     numImages = int(sys.argv[2])
 
     config = NoiseCoaddConfig()
@@ -65,9 +65,9 @@ imageShape = %s
 imageSigma = %0.1f
 variance   = %0.1f
 """ % (coaddPath, numImages, config.imageShape, config.imageSigma, config.variance))
-    
+
     numpy.random.seed(0)
-    
+
     coadd = None
     for imInd in range(numImages):
         print >> sys.stderr, "Create exposure %d" % (imInd,)
@@ -76,13 +76,13 @@ variance   = %0.1f
         # the WCS doesn't matter; the default will do
         wcs = afwImage.Wcs()
         exposure = afwImage.ExposureF(maskedImage, wcs)
-        
+
         if not coadd:
             print >> sys.stderr, "Create coadd"
             coadd = coaddChiSq.Coadd.fromConfig(
-                bbox = exposure.getBBox(),
-                wcs = exposure.getWcs(),
-                config = config.coadd)
+                bbox=exposure.getBBox(),
+                wcs=exposure.getWcs(),
+                config=config.coadd)
             print >> sys.stderr, "badPixelMask=", coadd.getBadPixelMask()
 
         coadd.addExposure(exposure)

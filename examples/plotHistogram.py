@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-# 
+#
 # LSST Data Management System
 # Copyright 2008, 2009, 2010 LSST Corporation.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -11,14 +11,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
@@ -39,6 +39,7 @@ UseSqrtForX = False
 
 ChiSqOffsets = (0.0, 0.25, 0.50, 0.75, 1.0)
 
+
 def clipOutliers(arr):
     """Clip values 3 sigma outside the median
     where sigma is estimated as the inter-quartile range * 0.741
@@ -52,6 +53,7 @@ def clipOutliers(arr):
     maxGood = median + threeSigma
     return numpy.extract((arr >= minGood) & (arr <= maxGood), arr)
 
+
 def plotHistogram(coaddName, weightMapName):
     """Plot a histogram given paths to the coadd and weight map
     """
@@ -60,11 +62,11 @@ def plotHistogram(coaddName, weightMapName):
     weightMapData = weightMap[0].data
     chiSqOrder = weightMapData.max()
     coaddData = coadd[0].data
-    if coaddData == None: # handle MEF
+    if coaddData == None:  # handle MEF
         coaddData = coadd[1].data
     if coaddData.shape != weightMapData.shape:
-        raise RuntimeError("Image shape = %s != %s = weight map shape" % \
-            (coaddData.shape, weightMapData.shape))
+        raise RuntimeError("Image shape = %s != %s = weight map shape" %
+                           (coaddData.shape, weightMapData.shape))
     goodData = numpy.extract(weightMapData.flat == chiSqOrder, coaddData.flat)
     numWrongOrder = len(coaddData.flat) - len(goodData)
     tempLen = len(goodData)
@@ -79,17 +81,18 @@ def plotHistogram(coaddName, weightMapName):
     numBig = tempLen - len(goodData)
     numTotal = len(coaddData.flat)
     print "ChiSquared order = %d; %d good pixels; %0.1f%% had wrong order; %0.1f%% were not finite; %0.1f%% >= 50" % \
-        (chiSqOrder, len(goodData), numWrongOrder * 100.0 / numTotal, numNotFinite * 100.0 / numTotal, numBig * 100.0 / numTotal)
-    
+        (chiSqOrder, len(goodData), numWrongOrder * 100.0 / numTotal,
+         numNotFinite * 100.0 / numTotal, numBig * 100.0 / numTotal)
+
     hist, binEdges = numpy.histogram(goodData, bins=NBins)
     hist = numpy.array(hist, dtype=float)
     hist /= hist.sum()
-    
+
     if UseLogForY:
         dataY = numpy.log10(hist)
     else:
         dataY = hist
-    
+
     dataX = binEdges[0:-1]
     if UseSqrtForX:
         plotDataX = numpy.sqrt(dataX)
@@ -114,20 +117,20 @@ def plotHistogram(coaddName, weightMapName):
     maxYInd = None
     for chiSqFudge in ChiSqOffsets:
         fudgedOrder = chiSqOrder + chiSqFudge
-    
+
         # plot chiSq probability distribution
         chiSqX = dataX
         chiSqDist = numpy.power(chiSqX, (fudgedOrder / 2.0) - 1) * numpy.exp(-chiSqX / 2.0)
         chiSqDist /= chiSqDist.sum()
-        
+
         # normalize chiSqDist to match data
-        endInd = chiSqDist.argmax() # index to peak of chi squared distribution
+        endInd = chiSqDist.argmax()  # index to peak of chi squared distribution
         if chiSqFudge == 0.0:
             maxYInd = endInd
         startInd = endInd / 2
         scaleArr = hist[startInd:endInd] / chiSqDist[startInd:endInd]
         chiSqDist *= scaleArr.mean()
-        
+
         if UseLogForY:
             chiSqDistY = numpy.log10(chiSqDist)
         else:
@@ -151,7 +154,7 @@ def plotHistogram(coaddName, weightMapName):
     pyplot.xlim((0, plotDataX[endInd]))
     yMargin = yRange * 0.05
     pyplot.ylim((minY, maxY + yMargin))
-    
+
     pyplot.show()
 
 if __name__ == "__main__":
@@ -163,7 +166,7 @@ where:
     if len(sys.argv) != 2:
         print helpStr
         sys.exit(0)
-    
+
     coaddName = sys.argv[1]
     for suffix in ("_img.fits", ".fits"):
         if coaddName.lower().endswith(suffix):
