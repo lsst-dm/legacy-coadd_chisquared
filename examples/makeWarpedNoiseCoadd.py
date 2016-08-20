@@ -110,7 +110,8 @@ saveDebugImages = %s
                     exposure.writeFits("exposure%d.fits" % (expNum,))
 
                 if not coadd:
-                    print("Create warper and coadd with size and WCS matching the first exposure", file=sys.stderr)
+                    print("Create warper and coadd with size and WCS matching the first exposure",
+                          file=sys.stderr)
                     warper = afwMath.Warper.fromConfig(config.warp)
                     coadd = coaddChiSq.Coadd.fromConfig(
                         bbox=exposure.getBBox(),

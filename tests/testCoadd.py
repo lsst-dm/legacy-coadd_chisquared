@@ -27,7 +27,7 @@
 import unittest
 
 from builtins import range
-import numpy
+import numpy as np
 
 import lsst.utils.tests as utilsTests
 import lsst.pex.policy as pexPolicy
@@ -59,17 +59,17 @@ def makeHistogram(coadd, numBins, numImages):
     # undo normalization
     coaddData *= float(numImages)
     # get rid of nans and infs
-    goodData = numpy.extract(numpy.isfinite(coaddData.flat), coaddData.flat)
-    goodData = numpy.extract(goodData < 50, goodData)
+    goodData = np.extract(np.isfinite(coaddData.flat), coaddData.flat)
+    goodData = np.extract(goodData < 50, goodData)
 
     # compute histogram
-    histY, binEdges = numpy.histogram(goodData, bins=numBins)
+    histY, binEdges = np.histogram(goodData, bins=numBins)
     histX = binEdges[0:-1]
-    histY = numpy.array(histY, dtype=float)  # convert from int to float
+    histY = np.array(histY, dtype=float)  # convert from int to float
     histY /= histY.sum()
 
     # compute chiSq probability distribution; chi squared order = numImages
-    chiSqY = numpy.power(histX, (numImages / 2.0) - 1) * numpy.exp(-histX / 2.0)
+    chiSqY = np.power(histX, (numImages / 2.0) - 1) * np.exp(-histX / 2.0)
     chiSqY /= chiSqY.sum()
 
     return (histX, histY, chiSqY)
@@ -90,7 +90,7 @@ class CoaddTestCase(unittest.TestCase):
 
         badMaskPlanes = ["EDGE"]
 
-        numpy.random.seed(0)
+        np.random.seed(0)
 
         coadd = None
         wcs = None
@@ -146,7 +146,7 @@ class CoaddTestCase(unittest.TestCase):
 
         badMaskPlanes = ["EDGE"]
 
-        numpy.random.seed(0)
+        np.random.seed(0)
 
         coadd = None
         wcs = None

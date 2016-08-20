@@ -81,9 +81,10 @@ def plotHistogram(coaddName, weightMapName):
     goodData = np.extract(goodData < 50, goodData)
     numBig = tempLen - len(goodData)
     numTotal = len(coaddData.flat)
-    print("ChiSquared order = %d; %d good pixels; %0.1f%% had wrong order; %0.1f%% were not finite; %0.1f%% >= 50" % \
-        (chiSqOrder, len(goodData), numWrongOrder * 100.0 / numTotal,
-         numNotFinite * 100.0 / numTotal, numBig * 100.0 / numTotal))
+    print("ChiSquared order = %d; %d good pixels; %0.1f%% had wrong order; "
+          "%0.1f%% were not finite; %0.1f%% >= 50" %
+          (chiSqOrder, len(goodData), numWrongOrder * 100.0 / numTotal,
+           numNotFinite * 100.0 / numTotal, numBig * 100.0 / numTotal))
 
     hist, binEdges = np.histogram(goodData, bins=NBins)
     hist = np.array(hist, dtype=float)

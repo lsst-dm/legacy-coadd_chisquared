@@ -101,7 +101,8 @@ def warpAndCoadd(coaddPath, exposureListPath, config):
                     exposure.writeFits("exposure%s.fits" % (expNum,))
 
                 if not coadd:
-                    print("Create warper and coadd with size and WCS matching the first/reference exposure", file=sys.stderr)
+                    print("Create warper and coadd with size and WCS matching the first/reference exposure",
+                          file=sys.stderr)
                     warper = afwMath.Warper.fromConfig(config.warp)
                     coadd = coaddChiSq.Coadd.fromConfig(
                         bbox=exposure.getBBox(),
@@ -145,8 +146,8 @@ def warpAndCoadd(coaddPath, exposureListPath, config):
     print("Coadded %d exposures and failed %d" % (numExposuresInCoadd, numExposuresFailed), file=sys.stderr)
     if numExposuresInCoadd > 1:
         timePerGoodExposure = accumGoodTime / float(numExposuresInCoadd - 1)
-        print("Processing speed: %.1f seconds/exposure (ignoring first and failed)" % \
-            (timePerGoodExposure,), file=sys.stderr)
+        print("Processing speed: %.1f seconds/exposure (ignoring first and failed)" % (timePerGoodExposure,),
+              file=sys.stderr)
 
 if __name__ == "__main__":
     pexLog.Trace.setVerbosity('lsst.coadd', 3)
