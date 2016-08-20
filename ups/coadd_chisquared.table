@@ -2,6 +2,7 @@ setupRequired(coadd_utils)
 setupRequired(numpy)
 setupRequired(scons)
 setupRequired(sconsUtils)
+setupRequired(python_future)
 
 setupOptional(afwdata)
 
