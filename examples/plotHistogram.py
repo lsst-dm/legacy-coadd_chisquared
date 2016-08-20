@@ -63,7 +63,7 @@ def plotHistogram(coaddName, weightMapName):
     weightMapData = weightMap[0].data
     chiSqOrder = weightMapData.max()
     coaddData = coadd[0].data
-    if coaddData == None:  # handle MEF
+    if coaddData is None:  # handle MEF
         coaddData = coadd[1].data
     if coaddData.shape != weightMapData.shape:
         raise RuntimeError("Image shape = %s != %s = weight map shape" %

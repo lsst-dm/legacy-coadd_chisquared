@@ -47,7 +47,7 @@ where:
 
 image = pyfits.open(imagePath)
 imageData = image[0].data
-if imageData == None:  # handle MEF
+if imageData is None:  # handle MEF
     imageData = image[1].data
 # get rid of nans and take square root
 goodData = np.ma.array(imageData.flat, mask=np.isnan(imageData.flat)).compressed()
