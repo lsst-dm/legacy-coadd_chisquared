@@ -22,16 +22,15 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
-from __future__ import with_statement
-from builtins import zip
+from __future__ import print_function
 """Plot a histogram for a chi squared coadd and overlay a chi squared distribution
 """
-from __future__ import print_function
 import os
 import sys
-import math
 
-import numpy
+from builtins import zip
+
+import numpy as np
 import pyfits
 import matplotlib.pyplot as pyplot
 
@@ -53,7 +52,7 @@ def clipOutliers(arr):
     median = arr[arrLen / 2]
     minGood = median - threeSigma
     maxGood = median + threeSigma
-    return numpy.extract((arr >= minGood) & (arr <= maxGood), arr)
+    return np.extract((arr >= minGood) & (arr <= maxGood), arr)
 
 
 def plotHistogram(coaddName, weightMapName):
@@ -69,35 +68,35 @@ def plotHistogram(coaddName, weightMapName):
     if coaddData.shape != weightMapData.shape:
         raise RuntimeError("Image shape = %s != %s = weight map shape" %
                            (coaddData.shape, weightMapData.shape))
-    goodData = numpy.extract(weightMapData.flat == chiSqOrder, coaddData.flat)
+    goodData = np.extract(weightMapData.flat == chiSqOrder, coaddData.flat)
     numWrongOrder = len(coaddData.flat) - len(goodData)
     tempLen = len(goodData)
-    goodData = numpy.extract(numpy.isfinite(goodData), goodData)
+    goodData = np.extract(np.isfinite(goodData), goodData)
     numNotFinite = tempLen - len(goodData)
 
     # undo normalization
     goodData *= float(chiSqOrder)
     # get rid of large values -- these are clearly not noise
     tempLen = len(goodData)
-    goodData = numpy.extract(goodData < 50, goodData)
+    goodData = np.extract(goodData < 50, goodData)
     numBig = tempLen - len(goodData)
     numTotal = len(coaddData.flat)
     print("ChiSquared order = %d; %d good pixels; %0.1f%% had wrong order; %0.1f%% were not finite; %0.1f%% >= 50" % \
         (chiSqOrder, len(goodData), numWrongOrder * 100.0 / numTotal,
          numNotFinite * 100.0 / numTotal, numBig * 100.0 / numTotal))
 
-    hist, binEdges = numpy.histogram(goodData, bins=NBins)
-    hist = numpy.array(hist, dtype=float)
+    hist, binEdges = np.histogram(goodData, bins=NBins)
+    hist = np.array(hist, dtype=float)
     hist /= hist.sum()
 
     if UseLogForY:
-        dataY = numpy.log10(hist)
+        dataY = np.log10(hist)
     else:
         dataY = hist
 
     dataX = binEdges[0:-1]
     if UseSqrtForX:
-        plotDataX = numpy.sqrt(dataX)
+        plotDataX = np.sqrt(dataX)
     else:
         plotDataX = dataX
 
@@ -122,7 +121,7 @@ def plotHistogram(coaddName, weightMapName):
 
         # plot chiSq probability distribution
         chiSqX = dataX
-        chiSqDist = numpy.power(chiSqX, (fudgedOrder / 2.0) - 1) * numpy.exp(-chiSqX / 2.0)
+        chiSqDist = np.power(chiSqX, (fudgedOrder / 2.0) - 1) * np.exp(-chiSqX / 2.0)
         chiSqDist /= chiSqDist.sum()
 
         # normalize chiSqDist to match data
@@ -134,7 +133,7 @@ def plotHistogram(coaddName, weightMapName):
         chiSqDist *= scaleArr.mean()
 
         if UseLogForY:
-            chiSqDistY = numpy.log10(chiSqDist)
+            chiSqDistY = np.log10(chiSqDist)
         else:
             chiSqDistY = chiSqDist
         plotNameSet.append((pyplot.plot(plotDataX, chiSqDistY), "ChiSq %0.1f" % (fudgedOrder,)))
@@ -144,15 +143,15 @@ def plotHistogram(coaddName, weightMapName):
 
     # set plot limits
     # compute min and max, ignoring non-finite values
-    finiteYValues = numpy.extract(numpy.isfinite(dataY), dataY)
+    finiteYValues = np.extract(np.isfinite(dataY), dataY)
     minY = finiteYValues.min()
     maxY = finiteYValues.max()
     # compute min of tail (portion after maximum), ignoring non-finite values
-    tailMinY = numpy.extract(numpy.isfinite(dataY[maxYInd:]), dataY[maxYInd:]).min()
+    tailMinY = np.extract(np.isfinite(dataY[maxYInd:]), dataY[maxYInd:]).min()
     yRange = maxY - tailMinY
     # plot out to where tail falls to 1% of max value
     yEndVal = tailMinY + (yRange * 0.01)
-    endInd = numpy.where(dataY[maxYInd:] <= yEndVal)[0][0] + maxYInd
+    endInd = np.where(dataY[maxYInd:] <= yEndVal)[0][0] + maxYInd
     pyplot.xlim((0, plotDataX[endInd]))
     yMargin = yRange * 0.05
     pyplot.ylim((minY, maxY + yMargin))

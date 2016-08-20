@@ -22,7 +22,6 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
-from __future__ import with_statement
 """Make a coadd from warped gaussian noise images
 """
 from __future__ import print_function
@@ -30,7 +29,7 @@ import os
 import sys
 import traceback
 
-import numpy
+import numpy as np
 
 import lsst.pex.logging as pexLog
 import lsst.afw.image as afwImage
@@ -80,7 +79,7 @@ variance   = %0.1f
 saveDebugImages = %s
 """ % (coaddPath, config.imageSigma, config.variance, config.saveDebugImages))
 
-    numpy.random.seed(0)
+    np.random.seed(0)
 
     # process exposures
     coadd = None

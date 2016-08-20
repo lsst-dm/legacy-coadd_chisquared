@@ -22,15 +22,12 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
-from __future__ import with_statement
 """Plot a histogram of the counts in an image
 """
 from __future__ import print_function
-import os
 import sys
-import math
 
-import numpy
+import numpy as np
 import pyfits
 import matplotlib.pyplot as pyplot
 
@@ -53,8 +50,8 @@ imageData = image[0].data
 if imageData == None:  # handle MEF
     imageData = image[1].data
 # get rid of nans and take square root
-goodData = numpy.ma.array(imageData.flat, mask=numpy.isnan(imageData.flat)).compressed()
-hist, binEdges = numpy.histogram(goodData, bins=NBins)
+goodData = np.ma.array(imageData.flat, mask=np.isnan(imageData.flat)).compressed()
+hist, binEdges = np.histogram(goodData, bins=NBins)
 counts = binEdges[0:-1]
 
 # plot log10(frequency) vs. sqrt of value

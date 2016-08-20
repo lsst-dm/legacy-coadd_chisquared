@@ -22,15 +22,14 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
-from __future__ import with_statement
-from builtins import range
 """Make a coadd from gaussian noise images
 """
 from __future__ import print_function
 import os
 import sys
 
-import numpy
+from builtins import range
+import numpy as np
 
 import lsst.afw.image as afwImage
 import lsst.afw.image.testUtils as afwTestUtils
@@ -68,7 +67,7 @@ imageSigma = %0.1f
 variance   = %0.1f
 """ % (coaddPath, numImages, config.imageShape, config.imageSigma, config.variance))
 
-    numpy.random.seed(0)
+    np.random.seed(0)
 
     coadd = None
     for imInd in range(numImages):
