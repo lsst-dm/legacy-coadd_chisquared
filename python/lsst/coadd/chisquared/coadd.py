@@ -21,7 +21,6 @@
 #
 from __future__ import absolute_import
 
-import lsst.pex.logging as pexLog
 import lsst.coadd.utils as coaddUtils
 from . import chisquaredLib
 
@@ -63,7 +62,7 @@ class Coadd(coaddUtils.Coadd):
         - overlapBBox: region of overlap between exposure and coadd in parent coordinates (afwGeom.Box2I)
         - weight: weight with which exposure was added to coadd; weight = weightFactor for this kind of coadd
         """
-        self._log.log(pexLog.Log.INFO, "add exposure to coadd")
+        self._log.info("add exposure to coadd")
 
         # save filter info
         filter = exposure.getFilter()

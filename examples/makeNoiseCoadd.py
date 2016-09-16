@@ -37,7 +37,6 @@ import lsst.coadd.chisquared as coaddChiSq
 from noiseCoaddConfig import NoiseCoaddConfig
 
 if __name__ == "__main__":
-    #    pexLog.Trace.setVerbosity('lsst.coadd', 5)
     helpStr = """Usage: makeCoadd.py coaddPath numImages
 
 where:
