@@ -33,7 +33,6 @@ Python interface to lsst::coadd::chisquared functions and classes
 
 %{
 #include <cstdint>
-#include "lsst/pex/logging.h"
 #include "lsst/afw/math.h"
 #include "lsst/afw/cameraGeom.h"
 #include "lsst/coadd/chisquared.h"

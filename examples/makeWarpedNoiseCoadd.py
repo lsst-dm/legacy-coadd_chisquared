@@ -31,15 +31,15 @@ import traceback
 
 import numpy as np
 
-import lsst.pex.logging as pexLog
 import lsst.afw.image as afwImage
 import lsst.afw.math as afwMath
 import lsst.afw.image.testUtils as afwTestUtils
 import lsst.coadd.chisquared as coaddChiSq
+from lsst.log import Log
 from noiseCoaddConfig import NoiseCoaddConfig
 
 if __name__ == "__main__":
-    pexLog.Trace.setVerbosity('lsst.coadd', 5)
+    Log.getLogger('coadd').setLevel(Log.DEBUG)
     helpStr = """Usage: makeWarpedNoiseCoadd.py coaddPath numImages
 
 where:
