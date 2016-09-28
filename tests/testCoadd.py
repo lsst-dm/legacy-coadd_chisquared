@@ -93,11 +93,10 @@ class CoaddTestCase(unittest.TestCase):
         np.random.seed(0)
 
         coadd = None
-        wcs = None
         for imInd in range(numImages):
             maskedImage = afwTestUtils.makeGaussianNoiseMaskedImage(
                 dimensions=imShape, sigma=imSigma, variance=imVariance)
-            exposure = afwImage.ExposureF(maskedImage, wcs)
+            exposure = afwImage.ExposureF(maskedImage)
 
             if not coadd:
                 coadd = coaddChiSq.Coadd(
@@ -149,10 +148,9 @@ class CoaddTestCase(unittest.TestCase):
         np.random.seed(0)
 
         coadd = None
-        wcs = None
         maskedImage = afwTestUtils.makeGaussianNoiseMaskedImage(
             dimensions=imShape, sigma=imSigma, variance=imVariance)
-        inExp = afwImage.ExposureF(maskedImage, wcs)
+        inExp = afwImage.ExposureF(maskedImage)
 
         coadd = coaddChiSq.Coadd(
             bbox=inExp.getBBox(),
