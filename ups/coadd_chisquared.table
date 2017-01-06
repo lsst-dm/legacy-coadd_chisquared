@@ -3,6 +3,7 @@ setupRequired(numpy)
 setupRequired(scons)
 setupRequired(sconsUtils)
 setupRequired(python_future)
+setupRequired(pybind11)
 
 setupOptional(afwdata)
 
