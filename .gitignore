@@ -9,8 +9,6 @@ config.log
 *.cfgc
 *.pyc
 *.fits
-*_wrap.cc
-*Lib.py
 doc/html
 doc/*.tag
 doc/*.inc
