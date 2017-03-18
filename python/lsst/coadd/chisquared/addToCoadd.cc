@@ -19,9 +19,9 @@
  * the GNU General Public License along with this program.  If not,
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
-#include <cstdint>
+#include "pybind11/pybind11.h"
 
-#include <pybind11/pybind11.h>
+#include <cstdint>
 
 #include "lsst/coadd/chisquared/addToCoadd.h"
 
@@ -49,8 +49,11 @@ void declareAddToCoadd(py::module& mod) {
 
 }  // namespace lsst::coadd::chisquared::<anonymous>
 
-PYBIND11_PLUGIN(_addToCoadd) {
-    py::module mod("_addToCoadd", "Python wrapper for _addToCoadd library");
+PYBIND11_PLUGIN(addToCoadd) {
+    py::module::import("lsst.afw.geom");
+    py::module::import("lsst.afw.image");
+
+    py::module mod("addToCoadd");
 
     declareAddToCoadd<double, double>(mod);
     declareAddToCoadd<double, float>(mod);
@@ -63,6 +66,7 @@ PYBIND11_PLUGIN(_addToCoadd) {
 
     return mod.ptr();
 }
-}
-}
-}  // namespace lsst::coadd::chisquared
+
+}  // chisquared
+}  // coadd
+}  // lsst
