@@ -19,10 +19,10 @@
 # the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import lsst.coadd.utils as coaddUtils
-from . import chisquaredLib
+from . addToCoadd import addToCoadd
 
 __all__ = ["Coadd"]
 
@@ -68,7 +68,7 @@ class Coadd(coaddUtils.Coadd):
         filter = exposure.getFilter()
         self._filterDict.setdefault(filter.getName(), filter)
 
-        overlapBBox = chisquaredLib.addToCoadd(self._coadd.getMaskedImage(), self._weightMap,
-                                               exposure.getMaskedImage(), self._badPixelMask, weightFactor)
+        overlapBBox = addToCoadd(self._coadd.getMaskedImage(), self._weightMap,
+                                 exposure.getMaskedImage(), self._badPixelMask, weightFactor)
 
         return overlapBBox, weightFactor
