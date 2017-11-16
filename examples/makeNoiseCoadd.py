@@ -73,9 +73,7 @@ variance   = %0.1f
         print("Create exposure %d" % (imInd,), file=sys.stderr)
         maskedImage = afwTestUtils.makeGaussianNoiseMaskedImage(
             dimensions=config.imageShape, sigma=config.imageSigma, variance=config.variance)
-        # the WCS doesn't matter; the default will do
-        wcs = afwImage.Wcs()
-        exposure = afwImage.ExposureF(maskedImage, wcs)
+        exposure = afwImage.ExposureF(maskedImage)
 
         if not coadd:
             print("Create coadd", file=sys.stderr)
