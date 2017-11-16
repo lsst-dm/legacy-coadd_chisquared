@@ -2,6 +2,8 @@ _build.*
 .sconsign.dblite
 config.log
 .sconf_temp
+.cache
+pytest_session.txt
 *.dylib
 *.o
 *.os
