@@ -1,7 +1,3 @@
 # -*- python -*-
-import glob
-import os
-
 from lsst.sconsUtils import scripts
-
 scripts.BasicSConscript.examples()
