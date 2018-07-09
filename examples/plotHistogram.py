@@ -31,7 +31,7 @@ import sys
 from builtins import zip
 
 import numpy as np
-import pyfits
+from astropy.io import fits
 import matplotlib.pyplot as pyplot
 
 NBins = 500
@@ -58,8 +58,8 @@ def clipOutliers(arr):
 def plotHistogram(coaddName, weightMapName):
     """Plot a histogram given paths to the coadd and weight map
     """
-    coadd = pyfits.open(coaddName)
-    weightMap = pyfits.open(weightMapName)
+    coadd = fits.open(coaddName)
+    weightMap = fits.open(weightMapName)
     weightMapData = weightMap[0].data
     chiSqOrder = weightMapData.max()
     coaddData = coadd[0].data
