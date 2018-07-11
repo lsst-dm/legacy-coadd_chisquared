@@ -23,7 +23,6 @@
 #
 """Demonstrate how to create a coadd by warping and adding.
 """
-from __future__ import print_function
 import os
 import sys
 import time

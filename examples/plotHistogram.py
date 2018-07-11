@@ -22,13 +22,11 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
-from __future__ import print_function
-"""Plot a histogram for a chi squared coadd and overlay a chi squared distribution
+"""Plot a histogram for a chi squared coadd and overlay a chi squared
+distribution.
 """
 import os
 import sys
-
-from builtins import zip
 
 import numpy as np
 from astropy.io import fits

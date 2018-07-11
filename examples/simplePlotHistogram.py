@@ -24,7 +24,6 @@
 
 """Plot a histogram of the counts in an image
 """
-from __future__ import print_function
 import sys
 
 import numpy as np

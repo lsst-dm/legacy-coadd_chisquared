@@ -24,7 +24,6 @@
 
 """Make a coadd from warped gaussian noise images
 """
-from __future__ import print_function
 import os
 import sys
 import traceback
