@@ -3,6 +3,7 @@ _build.*
 config.log
 .sconf_temp
 .cache
+.coverage
 pytest_session.txt
 *.dylib
 *.o
@@ -19,4 +20,3 @@ doc/xml
 tests/.tests
 tests/.cache
 version.py
-
