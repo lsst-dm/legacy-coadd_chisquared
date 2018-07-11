@@ -22,16 +22,14 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
-from __future__ import print_function
-"""Plot a histogram for a chi squared coadd and overlay a chi squared distribution
+"""Plot a histogram for a chi squared coadd and overlay a chi squared
+distribution.
 """
 import os
 import sys
 
-from builtins import zip
-
 import numpy as np
-import pyfits
+from astropy.io import fits
 import matplotlib.pyplot as pyplot
 
 NBins = 500
@@ -58,8 +56,8 @@ def clipOutliers(arr):
 def plotHistogram(coaddName, weightMapName):
     """Plot a histogram given paths to the coadd and weight map
     """
-    coadd = pyfits.open(coaddName)
-    weightMap = pyfits.open(weightMapName)
+    coadd = fits.open(coaddName)
+    weightMap = fits.open(weightMapName)
     weightMapData = weightMap[0].data
     chiSqOrder = weightMapData.max()
     coaddData = coadd[0].data
@@ -158,6 +156,7 @@ def plotHistogram(coaddName, weightMapName):
     pyplot.ylim((minY, maxY + yMargin))
 
     pyplot.show()
+
 
 if __name__ == "__main__":
     helpStr = """Usage: plotHistogram.py coaddfile

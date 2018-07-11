@@ -24,7 +24,6 @@
 
 """Make a coadd from warped gaussian noise images
 """
-from __future__ import print_function
 import os
 import sys
 import traceback
@@ -48,7 +47,8 @@ where:
     pathToExposure
   where:
   - pathToExposure is the path to an Exposure;
-    only the WCS and image size are used from the exposure; all other data is ignored.
+    only the WCS and image size are used from the exposure; all other data is
+    ignored.
   - the first exposure listed is taken to be the reference exposure;
     all other images are warped to match its WCS.
   - empty lines and lines that start with # are ignored.
@@ -56,7 +56,8 @@ where:
 Make a chi-squared coadd from a set of warped Gaussian noise images.
 The WCSs for the Gaussian images are taken from a list of input images
 (which are only used for their WCS).
-The intent is to see how correlated noise affects the statistics of a pure noise coadd.
+The intent is to see how correlated noise affects the statistics of a pure
+noise coadd.
 """
     if len(sys.argv) != 3:
         print(helpStr)
@@ -86,7 +87,7 @@ saveDebugImages = %s
     numExposuresInCoadd = 0
     numExposuresFailed = 0
     expNum = 0
-    with file(indata, "rU") as infile:
+    with open(indata, "rU") as infile:
         for lineNum, line in enumerate(infile):
             line = line.strip()
             if not line or line.startswith("#"):

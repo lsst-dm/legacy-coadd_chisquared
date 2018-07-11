@@ -24,11 +24,9 @@
 
 """Make a coadd from gaussian noise images
 """
-from __future__ import print_function
 import os
 import sys
 
-from builtins import range
 import numpy as np
 
 import lsst.afw.image as afwImage

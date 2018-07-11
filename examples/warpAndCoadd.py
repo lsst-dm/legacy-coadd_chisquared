@@ -23,7 +23,6 @@
 #
 """Demonstrate how to create a coadd by warping and adding.
 """
-from __future__ import print_function
 import os
 import sys
 import time
@@ -68,8 +67,8 @@ def warpAndCoadd(coaddPath, exposureListPath, config):
         blank lines and lines that start with # are ignored
     - config: an instance of WarpAndCoaddConfig
 
-    The first exposure in exposureListPath is used as the reference: all other exposures
-    are warped to match to it.
+    The first exposure in exposureListPath is used as the reference: all other
+    exposures are warped to match to it.
     """
     weightPath = os.path.splitext(coaddPath)[0] + "_weight.fits"
 
@@ -86,7 +85,7 @@ def warpAndCoadd(coaddPath, exposureListPath, config):
     expNum = 0
     numExposuresInCoadd = 0
     numExposuresFailed = 0
-    with file(exposureListPath, "rU") as infile:
+    with open(exposureListPath, "rU") as infile:
         for exposurePath in infile:
             exposurePath = exposurePath.strip()
             if not exposurePath or exposurePath.startswith("#"):
@@ -148,6 +147,7 @@ def warpAndCoadd(coaddPath, exposureListPath, config):
         timePerGoodExposure = accumGoodTime / float(numExposuresInCoadd - 1)
         print("Processing speed: %.1f seconds/exposure (ignoring first and failed)" % (timePerGoodExposure,),
               file=sys.stderr)
+
 
 if __name__ == "__main__":
     Log.getLogger('coadd').setLevel(Log.DEBUG)

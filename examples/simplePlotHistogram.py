@@ -24,11 +24,10 @@
 
 """Plot a histogram of the counts in an image
 """
-from __future__ import print_function
 import sys
 
 import numpy as np
-import pyfits
+from astropy.io import fits
 import matplotlib.pyplot as pyplot
 
 NBins = 300
@@ -45,7 +44,7 @@ where:
 
     imagePath = sys.argv[1]
 
-image = pyfits.open(imagePath)
+image = fits.open(imagePath)
 imageData = image[0].data
 if imageData is None:  # handle MEF
     imageData = image[1].data
