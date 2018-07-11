@@ -75,7 +75,8 @@ def makeHistogram(coadd, numBins, numImages):
 class CoaddTestCase(unittest.TestCase):
 
     def testNoiseCoadd(self):
-        """Build a coadd from noise images and compare the histogram to a chi squared distribution
+        """Build a coadd from noise images and compare the histogram to a chi
+        squared distribution
         """
         numImages = 4
         imShape = (150, 150)
@@ -171,8 +172,8 @@ class CoaddTestCase(unittest.TestCase):
     def assertEqualFilters(self, f1, f2):
         """Compare two filters
 
-        Right now compares only the name, but if == ever works for Filters (ticket #1744)
-        then use == instead
+        Right now compares only the name, but if == ever works for Filters
+        (ticket #1744) then use == instead
         """
         self.assertEqual(f1.getName(), f2.getName())
 

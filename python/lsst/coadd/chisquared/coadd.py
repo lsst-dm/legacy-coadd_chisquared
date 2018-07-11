@@ -52,13 +52,15 @@ class Coadd(coaddUtils.Coadd):
                                   )
 
     def addExposure(self, exposure, weightFactor=1.0):
-        """Add a an exposure to the coadd; it is assumed to have the same WCS as the coadd
+        """Add a an exposure to the coadd; it is assumed to have the same WCS
+        as the coadd
 
         Parameters
         ----------
         exposure : `lsst.afw.image.Exposure`
             Exposure to add to coadd; this must be:
-            - background-subtracted or background-matched to the other images being coadded
+            - background-subtracted or background-matched to the other images
+              being coadded
             - psf-matched to the desired PSF model (optional)
             - warped to match the coadd
         weightFactor : `float`

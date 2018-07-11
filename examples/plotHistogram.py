@@ -157,6 +157,7 @@ def plotHistogram(coaddName, weightMapName):
 
     pyplot.show()
 
+
 if __name__ == "__main__":
     helpStr = """Usage: plotHistogram.py coaddfile
 
