@@ -49,11 +49,9 @@ void declareAddToCoadd(py::module& mod) {
 
 }  // namespace lsst::coadd::chisquared::<anonymous>
 
-PYBIND11_PLUGIN(addToCoadd) {
+PYBIND11_MODULE(addToCoadd, mod) {
     py::module::import("lsst.afw.geom");
     py::module::import("lsst.afw.image");
-
-    py::module mod("addToCoadd");
 
     declareAddToCoadd<double, double>(mod);
     declareAddToCoadd<double, float>(mod);
@@ -63,8 +61,6 @@ PYBIND11_PLUGIN(addToCoadd) {
     declareAddToCoadd<float, float>(mod);
     declareAddToCoadd<float, int>(mod);
     declareAddToCoadd<float, std::uint16_t>(mod);
-
-    return mod.ptr();
 }
 
 }  // chisquared
