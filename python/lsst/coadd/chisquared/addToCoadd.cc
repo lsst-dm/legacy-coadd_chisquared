@@ -47,7 +47,7 @@ void declareAddToCoadd(py::module& mod) {
             "badPixelMask"_a, "weight"_a);
 }
 
-}  // namespace lsst::coadd::chisquared::<anonymous>
+}  // namespace
 
 PYBIND11_MODULE(addToCoadd, mod) {
     py::module::import("lsst.afw.geom");
@@ -63,6 +63,6 @@ PYBIND11_MODULE(addToCoadd, mod) {
     declareAddToCoadd<float, std::uint16_t>(mod);
 }
 
-}  // chisquared
-}  // coadd
-}  // lsst
+}  // namespace chisquared
+}  // namespace coadd
+}  // namespace lsst
