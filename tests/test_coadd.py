@@ -27,7 +27,6 @@ import unittest
 import numpy as np
 
 import lsst.utils.tests
-import lsst.pex.policy as pexPolicy
 import lsst.afw.image as afwImage
 import lsst.afw.image.utils as imageUtils
 import lsst.afw.image.testUtils as afwTestUtils
@@ -128,10 +127,8 @@ class CoaddTestCase(unittest.TestCase):
     def testFilters(self):
         """Test that the coadd filter is set correctly
         """
-        filterPolicyFile = pexPolicy.DefaultPolicyFile("afw", "SdssFilters.paf", "tests")
-        filterPolicy = pexPolicy.Policy.createPolicy(
-            filterPolicyFile, filterPolicyFile.getRepositoryPath(), True)
-        imageUtils.defineFiltersFromPolicy(filterPolicy, reset=True)
+        imageUtils.defineFilter("g", 468.6)
+        imageUtils.defineFilter("r", 616.5)
 
         unkFilter = afwImage.Filter()
         gFilter = afwImage.Filter("g")
